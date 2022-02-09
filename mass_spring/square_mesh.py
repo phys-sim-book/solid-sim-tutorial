@@ -8,7 +8,7 @@ def generate(side_length, n_seg):
         for j in range(0, n_seg + 1):
             x[i * (n_seg + 1) + j] = [-side_length / 2 + i * step, -side_length / 2 + j * step]
     
-    # connect the nodes to a triangle mesh
+    # connect the nodes with edges
     e = []
     # horizontal edges
     for i in range(0, n_seg):
