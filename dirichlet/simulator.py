@@ -10,10 +10,10 @@ import time_integrator
 # simulation setup
 side_len = 1
 rho = 1000  # density of square
-k = 1e5     # spring stiffness
-initial_stretch = 1.4
+k = 1e3     # spring stiffness
 n_seg = 4   # num of segments per side of the square
-h = 0.004   # time step size in s
+h = 0.02    # time step size in s
+DBC = [0, (n_seg + 1) * n_seg]  # fix the left and right top nodes
 
 # initialize simulation
 [x, e] = square_mesh.generate(side_len, n_seg)  # node positions and edge node indices
@@ -25,9 +25,10 @@ for i in range(0, len(e)):
     diff = x[e[i][0]] - x[e[i][1]]
     l2.append(diff.dot(diff))
 k = [k] * len(e)    # spring stiffness
-# apply initial stretch horizontally
-for i in range(0, len(x)):
-    x[i][0] *= initial_stretch
+# identify whether a node is Dirichlet
+is_DBC = [False] * len(x)
+for i in DBC:
+    is_DBC[i] = True
 
 # simulation with visualization
 time_step = 0
@@ -51,7 +52,7 @@ while running:
     pygame.display.flip()   # flip the display
 
     # step forward simulation and wait for screen refresh
-    [x, v] = time_integrator.step_forward(x, e, v, m, l2, k, h, 1e-2)
+    [x, v] = time_integrator.step_forward(x, e, v, m, l2, k, is_DBC, h, 1e-2)
     time_step += 1
     pygame.time.wait(int(h * 1000))
 
