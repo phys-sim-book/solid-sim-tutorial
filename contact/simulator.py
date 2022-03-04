@@ -9,11 +9,12 @@ import time_integrator
 
 # simulation setup
 side_len = 1
-rho = 1000  # density of square
-k = 2e4     # spring stiffness
-n_seg = 4   # num of segments per side of the square
-h = 0.01    # time step size in s
-DBC = []    # no nodes need to be fixed
+rho = 1000      # density of square
+k = 2e4         # spring stiffness
+n_seg = 4       # num of segments per side of the square
+h = 0.01        # time step size in s
+DBC = []        # no nodes need to be fixed
+y_ground = -1   # height of the planar ground
 
 # initialize simulation
 [x, e] = square_mesh.generate(side_len, n_seg)  # node positions and edge node indices
@@ -51,7 +52,7 @@ while running:
 
     # fill the background and draw the square
     screen.fill((255, 255, 255))
-    pygame.draw.aaline(screen, (0, 0, 255), [0, offset[1] + 1 * scale], [resolution[1], offset[1] + 1 * scale])   # ground
+    pygame.draw.aaline(screen, (0, 0, 255), screen_projection([-2, y_ground]), screen_projection([2, y_ground]))   # ground
     for eI in e:
         pygame.draw.aaline(screen, (0, 0, 255), screen_projection(x[eI[0]]), screen_projection(x[eI[1]]))
     for xI in x:
@@ -60,7 +61,7 @@ while running:
     pygame.display.flip()   # flip the display
 
     # step forward simulation and wait for screen refresh
-    [x, v] = time_integrator.step_forward(x, e, v, m, l2, k, contact_area, is_DBC, h, 1e-2)
+    [x, v] = time_integrator.step_forward(x, e, v, m, l2, k, y_ground, contact_area, is_DBC, h, 1e-2)
     time_step += 1
     pygame.time.wait(int(h * 1000))
 
