@@ -10,10 +10,10 @@ import time_integrator
 # simulation setup
 side_len = 1
 rho = 1000  # density of square
-k = 1e3     # spring stiffness
+k = 2e4     # spring stiffness
 n_seg = 4   # num of segments per side of the square
-h = 0.02    # time step size in s
-DBC = [0, (n_seg + 1) * n_seg]  # fix the left and right top nodes
+h = 0.01    # time step size in s
+DBC = []    # no nodes need to be fixed
 
 # initialize simulation
 [x, e] = square_mesh.generate(side_len, n_seg)  # node positions and edge node indices
@@ -29,10 +29,17 @@ k = [k] * len(e)    # spring stiffness
 is_DBC = [False] * len(x)
 for i in DBC:
     is_DBC[i] = True
+contact_area = [side_len / n_seg] * len(x)     # perimeter split to each node
 
 # simulation with visualization
+resolution = np.array([900, 900])
+offset = resolution / 2
+scale = 200
+def screen_projection(x):
+    return [offset[0] + scale * x[0], resolution[1] - (offset[1] + scale * x[1])]
+
 time_step = 0
-screen = pygame.display.set_mode([900, 900])
+screen = pygame.display.set_mode(resolution)
 running = True
 while running:
     # run until the user asks to quit
@@ -44,15 +51,16 @@ while running:
 
     # fill the background and draw the square
     screen.fill((255, 255, 255))
+    pygame.draw.aaline(screen, (0, 0, 255), [0, offset[1] + 1 * scale], [resolution[1], offset[1] + 1 * scale])   # ground
     for eI in e:
-        pygame.draw.aaline(screen, (0, 0, 255), 450 + x[eI[0]] * 200, 450 + x[eI[1]] * 200)
+        pygame.draw.aaline(screen, (0, 0, 255), screen_projection(x[eI[0]]), screen_projection(x[eI[1]]))
     for xI in x:
-        pygame.draw.circle(screen, (0, 0, 255), 450 + xI * 200, 0.1 * side_len / n_seg * 200)
+        pygame.draw.circle(screen, (0, 0, 255), screen_projection(xI), 0.1 * side_len / n_seg * scale)
 
     pygame.display.flip()   # flip the display
 
     # step forward simulation and wait for screen refresh
-    [x, v] = time_integrator.step_forward(x, e, v, m, l2, k, is_DBC, h, 1e-2)
+    [x, v] = time_integrator.step_forward(x, e, v, m, l2, k, contact_area, is_DBC, h, 1e-2)
     time_step += 1
     pygame.time.wait(int(h * 1000))
 
