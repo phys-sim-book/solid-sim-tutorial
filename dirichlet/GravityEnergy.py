@@ -1,6 +1,6 @@
 import numpy as np
 
-gravity = [0.0, 9.81]
+gravity = [0.0, -9.81]
 
 def val(x, m):
     sum = 0.0

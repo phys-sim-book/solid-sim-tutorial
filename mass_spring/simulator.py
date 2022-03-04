@@ -30,8 +30,14 @@ for i in range(0, len(x)):
     x[i][0] *= initial_stretch
 
 # simulation with visualization
+resolution = np.array([900, 900])
+offset = resolution / 2
+scale = 200
+def screen_projection(x):
+    return [offset[0] + scale * x[0], resolution[1] - (offset[1] + scale * x[1])]
+
 time_step = 0
-screen = pygame.display.set_mode([900, 900])
+screen = pygame.display.set_mode(resolution)
 running = True
 while running:
     # run until the user asks to quit
@@ -44,9 +50,9 @@ while running:
     # fill the background and draw the square
     screen.fill((255, 255, 255))
     for eI in e:
-        pygame.draw.aaline(screen, (0, 0, 255), 450 + x[eI[0]] * 200, 450 + x[eI[1]] * 200)
+        pygame.draw.aaline(screen, (0, 0, 255), screen_projection(x[eI[0]]), screen_projection(x[eI[1]]))
     for xI in x:
-        pygame.draw.circle(screen, (0, 0, 255), 450 + xI * 200, 0.1 * side_len / n_seg * 200)
+        pygame.draw.circle(screen, (0, 0, 255), screen_projection(xI), 0.1 * side_len / n_seg * scale)
 
     pygame.display.flip()   # flip the display
 
