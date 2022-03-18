@@ -14,7 +14,8 @@ k = 2e4         # spring stiffness
 n_seg = 4       # num of segments per side of the square
 h = 0.01        # time step size in s
 DBC = []        # no nodes need to be fixed
-y_ground = -1   # height of the planar ground
+ground_n = np.array([0.0, 1.0])   # height of the planar ground
+ground_o = np.array([0.0, -1.0])
 
 # initialize simulation
 [x, e] = square_mesh.generate(side_len, n_seg)  # node positions and edge node indices
