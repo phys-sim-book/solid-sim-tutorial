@@ -14,8 +14,8 @@ k = 2e4         # spring stiffness
 n_seg = 4       # num of segments per side of the square
 h = 0.01        # time step size in s
 DBC = []        # no nodes need to be fixed
-ground_n = np.array([0.0, 1.0])   # height of the planar ground
-ground_o = np.array([0.0, -1.0])
+ground_n = np.array([0.0, 1.0])     # normal of the slope
+ground_o = np.array([0.0, -1.0])    # a point on the slope  
 
 # initialize simulation
 [x, e] = square_mesh.generate(side_len, n_seg)  # node positions and edge node indices
@@ -32,6 +32,7 @@ is_DBC = [False] * len(x)
 for i in DBC:
     is_DBC[i] = True
 contact_area = [side_len / n_seg] * len(x)     # perimeter split to each node
+ground_n /= np.linalg.norm(ground_n)    # normalize ground normal vector just in case
 
 # simulation with visualization
 resolution = np.array([900, 900])
@@ -53,7 +54,8 @@ while running:
 
     # fill the background and draw the square
     screen.fill((255, 255, 255))
-    pygame.draw.aaline(screen, (0, 0, 255), screen_projection([-2, y_ground]), screen_projection([2, y_ground]))   # ground
+    pygame.draw.aaline(screen, (0, 0, 255), screen_projection([ground_o[0] - 3.0 * ground_n[1], ground_o[1] + 3.0 * ground_n[0]]), 
+        screen_projection([ground_o[0] + 3.0 * ground_n[1], ground_o[1] - 3.0 * ground_n[0]]))   # ground
     for eI in e:
         pygame.draw.aaline(screen, (0, 0, 255), screen_projection(x[eI[0]]), screen_projection(x[eI[1]]))
     for xI in x:
@@ -62,7 +64,7 @@ while running:
     pygame.display.flip()   # flip the display
 
     # step forward simulation and wait for screen refresh
-    [x, v] = time_integrator.step_forward(x, e, v, m, l2, k, y_ground, contact_area, is_DBC, h, 1e-2)
+    [x, v] = time_integrator.step_forward(x, e, v, m, l2, k, ground_n, ground_o, contact_area, is_DBC, h, 1e-2)
     time_step += 1
     pygame.time.wait(int(h * 1000))
 
