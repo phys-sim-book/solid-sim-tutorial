@@ -15,6 +15,7 @@ n_seg = 4       # num of segments per side of the square
 h = 0.01        # time step size in s
 DBC = []        # no nodes need to be fixed
 ground_n = np.array([0.1, 1.0])     # normal of the slope
+ground_n /= np.linalg.norm(ground_n)    # normalize ground normal vector just in case
 ground_o = np.array([0.0, -1.0])    # a point on the slope  
 mu = 0.11        # friction coefficient of the slope
 
@@ -33,7 +34,6 @@ is_DBC = [False] * len(x)
 for i in DBC:
     is_DBC[i] = True
 contact_area = [side_len / n_seg] * len(x)     # perimeter split to each node
-ground_n /= np.linalg.norm(ground_n)    # normalize ground normal vector just in case
 
 # simulation with visualization
 resolution = np.array([900, 900])
@@ -56,7 +56,7 @@ while running:
     # fill the background and draw the square
     screen.fill((255, 255, 255))
     pygame.draw.aaline(screen, (0, 0, 255), screen_projection([ground_o[0] - 3.0 * ground_n[1], ground_o[1] + 3.0 * ground_n[0]]), 
-        screen_projection([ground_o[0] + 3.0 * ground_n[1], ground_o[1] - 3.0 * ground_n[0]]))   # ground
+        screen_projection([ground_o[0] + 3.0 * ground_n[1], ground_o[1] - 3.0 * ground_n[0]]))   # slope
     for eI in e:
         pygame.draw.aaline(screen, (0, 0, 255), screen_projection(x[eI[0]]), screen_projection(x[eI[1]]))
     for xI in x:
