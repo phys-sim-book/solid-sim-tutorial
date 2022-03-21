@@ -11,6 +11,7 @@ import MassSpringEnergy
 import GravityEnergy
 import BarrierEnergy
 import FrictionEnergy
+import SpringEnergy
 
 def step_forward(x, e, v, m, l2, k, n, o, contact_area, mu, is_DBC, h, tol):
     x_tilde = x + v * h     # implicit Euler predictive position
@@ -40,22 +41,34 @@ def step_forward(x, e, v, m, l2, k, n, o, contact_area, mu, is_DBC, h, tol):
     return [x, v]
 
 def IP_val(x, e, x_tilde, m, l2, k, n, o, contact_area, v, mu_lambda, h):
-    return InertiaEnergy.val(x, x_tilde, m) + h * h * (MassSpringEnergy.val(x, e, l2, k) + GravityEnergy.val(x, m) + BarrierEnergy.val(x, n, o, contact_area) + FrictionEnergy.val(v, mu_lambda, h, n))     # implicit Euler
+    return InertiaEnergy.val(x, x_tilde, m) + h * h * (     # implicit Euler
+        MassSpringEnergy.val(x, e, l2, k) + 
+        GravityEnergy.val(x, m) + 
+        BarrierEnergy.val(x, n, o, contact_area) + 
+        FrictionEnergy.val(v, mu_lambda, h, n)
+    ) + SpringEnergy.val(x, m, [len(x) - 1], [np.array([0.0, 0.6])])
 
 def IP_grad(x, e, x_tilde, m, l2, k, n, o, contact_area, v, mu_lambda, h):
-    return InertiaEnergy.grad(x, x_tilde, m) + h * h * (MassSpringEnergy.grad(x, e, l2, k) + GravityEnergy.grad(x, m) + BarrierEnergy.grad(x, n, o, contact_area) + FrictionEnergy.grad(v, mu_lambda, h, n))   # implicit Euler
+    return InertiaEnergy.grad(x, x_tilde, m) + h * h * (    # implicit Euler
+        MassSpringEnergy.grad(x, e, l2, k) + 
+        GravityEnergy.grad(x, m) + 
+        BarrierEnergy.grad(x, n, o, contact_area) + 
+        FrictionEnergy.grad(v, mu_lambda, h, n)
+    ) + SpringEnergy.grad(x, m, [len(x) - 1], [np.array([0.0, 0.6])])
 
 def IP_hess(x, e, x_tilde, m, l2, k, n, o, contact_area, v, mu_lambda, h):
     IJV_In = InertiaEnergy.hess(x, x_tilde, m)
     IJV_MS = MassSpringEnergy.hess(x, e, l2, k)
     IJV_B = BarrierEnergy.hess(x, n, o, contact_area)
     IJV_F = FrictionEnergy.hess(v, mu_lambda, h, n)
+    IJV_S = SpringEnergy.hess(x, m, [len(x) - 1], [np.array([0.0, 0.6])])
     IJV_MS[2] *= h * h    # implicit Euler
     IJV_B[2] *= h * h     # implicit Euler
     IJV_F[2] *= h * h     # implicit Euler
     IJV_In_MS = np.append(IJV_In, IJV_MS, axis=1)
     IJV_In_MS_B = np.append(IJV_In_MS, IJV_B, axis=1)
-    IJV = np.append(IJV_In_MS_B, IJV_F, axis=1)
+    IJV_In_MS_B_F = np.append(IJV_In_MS_B, IJV_F, axis=1)
+    IJV = np.append(IJV_In_MS_B_F, IJV_S, axis=1)
     H = sparse.coo_matrix((IJV[2], (IJV[0], IJV[1])), shape=(len(x) * 2, len(x) * 2)).tocsr()
     return H
 
