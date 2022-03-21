@@ -42,3 +42,12 @@ def init_step_size(x, n, o, p):
         if p_n < 0:
             alpha = min(alpha, 0.9 * n.dot(x[i] - o) / -p_n)
     return alpha
+
+def compute_mu_lambda(x, n, o, contact_area, mu):
+    mu_lambda = np.array([0.0] * len(x))
+    for i in range(0, len(x)):
+        d = n.dot(x[i] - o)
+        if d < dhat:
+            s = d / dhat
+            mu_lambda[i] = mu * -contact_area[i] * dhat * (kappa / 2 * (math.log(s) / dhat + (s - 1) / d))
+    return mu_lambda

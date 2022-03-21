@@ -1,6 +1,6 @@
 # Mass-Spring Solids Simulation
 
-A square falling onto the ground under gravity is simulated with mass-spring elasticity potential and implicit Euler time integration.
+A square sliding/residing on a slope under gravity is simulated with mass-spring elasticity potential and implicit Euler time integration.
 Each time step is solved by minimizing the Incremental Potential with the projected Newton method.
 
 ## Dependencies

@@ -14,8 +14,9 @@ k = 2e4         # spring stiffness
 n_seg = 4       # num of segments per side of the square
 h = 0.01        # time step size in s
 DBC = []        # no nodes need to be fixed
-ground_n = np.array([0.0, 1.0])     # normal of the slope
+ground_n = np.array([0.1, 1.0])     # normal of the slope
 ground_o = np.array([0.0, -1.0])    # a point on the slope  
+mu = 0.11        # friction coefficient of the slope
 
 # initialize simulation
 [x, e] = square_mesh.generate(side_len, n_seg)  # node positions and edge node indices
@@ -64,7 +65,7 @@ while running:
     pygame.display.flip()   # flip the display
 
     # step forward simulation and wait for screen refresh
-    [x, v] = time_integrator.step_forward(x, e, v, m, l2, k, ground_n, ground_o, contact_area, is_DBC, h, 1e-2)
+    [x, v] = time_integrator.step_forward(x, e, v, m, l2, k, ground_n, ground_o, contact_area, mu, is_DBC, h, 1e-2)
     time_step += 1
     pygame.time.wait(int(h * 1000))
 
