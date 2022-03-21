@@ -14,14 +14,15 @@ k = 2e4         # spring stiffness
 n_seg = 4       # num of segments per side of the square
 h = 0.01        # time step size in s
 DBC = []        # no nodes need to be fixed
-ground_n = np.array([0.1, 1.0])     # normal of the slope
+ground_n = np.array([0.0, 1.0])     # normal of the slope
 ground_n /= np.linalg.norm(ground_n)    # normalize ground normal vector just in case
 ground_o = np.array([0.0, -1.0])    # a point on the slope  
 mu = 0.11        # friction coefficient of the slope
 
 # initialize simulation
-[x, e] = square_mesh.generate(side_len, n_seg)  # node positions and edge node indices
-v = np.array([[0.0, 0.0]] * len(x))             # velocity
+[x, e] = square_mesh.generate(side_len, n_seg)      # node positions and edge node indices
+x = np.append(x, [[0.0, side_len * 0.6]], axis=0)   # ceil origin (with normal [0.0, -1.0])
+v = np.array([[0.0, 0.0]] * len(x))                 # velocity
 m = [rho * side_len * side_len / ((n_seg + 1) * (n_seg + 1))] * len(x)  # calculate node mass evenly
 # rest length squared
 l2 = []
@@ -56,10 +57,13 @@ while running:
     # fill the background and draw the square
     screen.fill((255, 255, 255))
     pygame.draw.aaline(screen, (0, 0, 255), screen_projection([ground_o[0] - 3.0 * ground_n[1], ground_o[1] + 3.0 * ground_n[0]]), 
-        screen_projection([ground_o[0] + 3.0 * ground_n[1], ground_o[1] - 3.0 * ground_n[0]]))   # slope
+        screen_projection([ground_o[0] + 3.0 * ground_n[1], ground_o[1] - 3.0 * ground_n[0]]))   # ground
+    pygame.draw.aaline(screen, (0, 0, 255), screen_projection([x[-1][0] + 3.0, x[-1][1]]), 
+        screen_projection([x[-1][0] - 3.0, x[-1][1]]))   # ceil
     for eI in e:
         pygame.draw.aaline(screen, (0, 0, 255), screen_projection(x[eI[0]]), screen_projection(x[eI[1]]))
-    for xI in x:
+    for xId in range(0, len(x) - 1):
+        xI = x[xId]
         pygame.draw.circle(screen, (0, 0, 255), screen_projection(xI), 0.1 * side_len / n_seg * scale)
 
     pygame.display.flip()   # flip the display
