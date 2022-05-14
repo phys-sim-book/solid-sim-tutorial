@@ -7,13 +7,13 @@ import scipy.sparse as sparse
 from scipy.sparse.linalg import spsolve
 
 import InertiaEnergy
-import MassSpringEnergy
+import NeoHookeanEnergy
 import GravityEnergy
 import BarrierEnergy
 import FrictionEnergy
 import SpringEnergy
 
-def step_forward(x, e, v, m, l2, k, n, o, contact_area, mu, is_DBC, DBC, DBC_v, DBC_limit, h, tol):
+def step_forward(x, e, v, m, vol, IB, mu_lame, lam, n, o, contact_area, mu, is_DBC, DBC, DBC_v, DBC_limit, h, tol):
     x_tilde = x + v * h     # implicit Euler predictive position
     x_n = copy.deepcopy(x)
     mu_lambda = BarrierEnergy.compute_mu_lambda(x, n, o, contact_area, mu)  # compute mu * lambda for each node using x^n
@@ -23,12 +23,12 @@ def step_forward(x, e, v, m, l2, k, n, o, contact_area, mu, is_DBC, DBC, DBC_v, 
             DBC_target.append(x_n[DBC[i]] + h * DBC_v[i])
         else:
             DBC_target.append(x_n[DBC[i]])
-    DBC_stiff = 10  # initialize stiffness for DBC springs
+    DBC_stiff = 1000  # initialize stiffness for DBC springs
 
     # Newton loop
     iter = 0
-    E_last = IP_val(x, e, x_tilde, m, l2, k, n, o, contact_area, (x - x_n) / h, mu_lambda, DBC, DBC_target, DBC_stiff, h)
-    [p, DBC_satisfied] = search_dir(x, e, x_tilde, m, l2, k, n, o, contact_area, (x - x_n) / h, mu_lambda, is_DBC, DBC, DBC_target, DBC_stiff, tol, h)
+    E_last = IP_val(x, e, x_tilde, m, vol, IB, mu_lame, lam, n, o, contact_area, (x - x_n) / h, mu_lambda, DBC, DBC_target, DBC_stiff, h)
+    [p, DBC_satisfied] = search_dir(x, e, x_tilde, m, vol, IB, mu_lame, lam, n, o, contact_area, (x - x_n) / h, mu_lambda, is_DBC, DBC, DBC_target, DBC_stiff, tol, h)
     while (LA.norm(p, inf) / h > tol) | (sum(DBC_satisfied) != len(DBC)):   # also check whether all DBCs are satisfied
         print('Iteration', iter, ':')
         print('residual =', LA.norm(p, inf) / h)
@@ -36,41 +36,41 @@ def step_forward(x, e, v, m, l2, k, n, o, contact_area, mu, is_DBC, DBC, DBC_v, 
         if (LA.norm(p, inf) / h <= tol) & (sum(DBC_satisfied) != len(DBC)):
             # increase DBC stiffness and recompute energy value record
             DBC_stiff *= 2
-            E_last = IP_val(x, e, x_tilde, m, l2, k, n, o, contact_area, (x - x_n) / h, mu_lambda, DBC, DBC_target, DBC_stiff, h)
+            E_last = IP_val(x, e, x_tilde, m, vol, IB, mu_lame, lam, n, o, contact_area, (x - x_n) / h, mu_lambda, DBC, DBC_target, DBC_stiff, h)
 
         # filter line search
-        alpha = BarrierEnergy.init_step_size(x, n, o, p)  # avoid interpenetration and tunneling
-        while IP_val(x + alpha * p, e, x_tilde, m, l2, k, n, o, contact_area, (x - x_n) / h, mu_lambda, DBC, DBC_target, DBC_stiff, h) > E_last:
+        alpha = min(BarrierEnergy.init_step_size(x, n, o, p), NeoHookeanEnergy.init_step_size(x, e, p))  # avoid interpenetration, tunneling, and inversion
+        while IP_val(x + alpha * p, e, x_tilde, m, vol, IB, mu_lame, lam, n, o, contact_area, (x - x_n) / h, mu_lambda, DBC, DBC_target, DBC_stiff, h) > E_last:
             alpha /= 2
         print('step size =', alpha)
 
         x += alpha * p
-        E_last = IP_val(x, e, x_tilde, m, l2, k, n, o, contact_area, (x - x_n) / h, mu_lambda, DBC, DBC_target, DBC_stiff, h)
-        [p, DBC_satisfied] = search_dir(x, e, x_tilde, m, l2, k, n, o, contact_area, (x - x_n) / h, mu_lambda, is_DBC, DBC, DBC_target, DBC_stiff, tol, h)
+        E_last = IP_val(x, e, x_tilde, m, vol, IB, mu_lame, lam, n, o, contact_area, (x - x_n) / h, mu_lambda, DBC, DBC_target, DBC_stiff, h)
+        [p, DBC_satisfied] = search_dir(x, e, x_tilde, m, vol, IB, mu_lame, lam, n, o, contact_area, (x - x_n) / h, mu_lambda, is_DBC, DBC, DBC_target, DBC_stiff, tol, h)
         iter += 1
 
     v = (x - x_n) / h   # implicit Euler velocity update
     return [x, v]
 
-def IP_val(x, e, x_tilde, m, l2, k, n, o, contact_area, v, mu_lambda, DBC, DBC_target, DBC_stiff, h):
+def IP_val(x, e, x_tilde, m, vol, IB, mu_lame, lam, n, o, contact_area, v, mu_lambda, DBC, DBC_target, DBC_stiff, h):
     return InertiaEnergy.val(x, x_tilde, m) + h * h * (     # implicit Euler
-        MassSpringEnergy.val(x, e, l2, k) + 
+        NeoHookeanEnergy.val(x, e, vol, IB, mu_lame, lam) + 
         GravityEnergy.val(x, m) + 
         BarrierEnergy.val(x, n, o, contact_area) + 
         FrictionEnergy.val(v, mu_lambda, h, n)
     ) + SpringEnergy.val(x, m, DBC, DBC_target, DBC_stiff)
 
-def IP_grad(x, e, x_tilde, m, l2, k, n, o, contact_area, v, mu_lambda, DBC, DBC_target, DBC_stiff, h):
+def IP_grad(x, e, x_tilde, m, vol, IB, mu_lame, lam, n, o, contact_area, v, mu_lambda, DBC, DBC_target, DBC_stiff, h):
     return InertiaEnergy.grad(x, x_tilde, m) + h * h * (    # implicit Euler
-        MassSpringEnergy.grad(x, e, l2, k) + 
+        NeoHookeanEnergy.grad(x, e, vol, IB, mu_lame, lam) + 
         GravityEnergy.grad(x, m) + 
         BarrierEnergy.grad(x, n, o, contact_area) + 
         FrictionEnergy.grad(v, mu_lambda, h, n)
     ) + SpringEnergy.grad(x, m, DBC, DBC_target, DBC_stiff)
 
-def IP_hess(x, e, x_tilde, m, l2, k, n, o, contact_area, v, mu_lambda, DBC, DBC_target, DBC_stiff, h):
+def IP_hess(x, e, x_tilde, m, vol, IB, mu_lame, lam, n, o, contact_area, v, mu_lambda, DBC, DBC_target, DBC_stiff, h):
     IJV_In = InertiaEnergy.hess(x, x_tilde, m)
-    IJV_MS = MassSpringEnergy.hess(x, e, l2, k)
+    IJV_MS = NeoHookeanEnergy.hess(x, e, vol, IB, mu_lame, lam)
     IJV_B = BarrierEnergy.hess(x, n, o, contact_area)
     IJV_F = FrictionEnergy.hess(v, mu_lambda, h, n)
     IJV_S = SpringEnergy.hess(x, m, DBC, DBC_target, DBC_stiff)
@@ -84,9 +84,9 @@ def IP_hess(x, e, x_tilde, m, l2, k, n, o, contact_area, v, mu_lambda, DBC, DBC_
     H = sparse.coo_matrix((IJV[2], (IJV[0], IJV[1])), shape=(len(x) * 2, len(x) * 2)).tocsr()
     return H
 
-def search_dir(x, e, x_tilde, m, l2, k, n, o, contact_area, v, mu_lambda, is_DBC, DBC, DBC_target, DBC_stiff, tol, h):
-    projected_hess = IP_hess(x, e, x_tilde, m, l2, k, n, o, contact_area, v, mu_lambda, DBC, DBC_target, DBC_stiff, h)
-    reshaped_grad = IP_grad(x, e, x_tilde, m, l2, k, n, o, contact_area, v, mu_lambda, DBC, DBC_target, DBC_stiff, h).reshape(len(x) * 2, 1)
+def search_dir(x, e, x_tilde, m, vol, IB, mu_lame, lam, n, o, contact_area, v, mu_lambda, is_DBC, DBC, DBC_target, DBC_stiff, tol, h):
+    projected_hess = IP_hess(x, e, x_tilde, m, vol, IB, mu_lame, lam, n, o, contact_area, v, mu_lambda, DBC, DBC_target, DBC_stiff, h)
+    reshaped_grad = IP_grad(x, e, x_tilde, m, vol, IB, mu_lame, lam, n, o, contact_area, v, mu_lambda, DBC, DBC_target, DBC_stiff, h).reshape(len(x) * 2, 1)
     # check whether each DBC is satisfied
     DBC_satisfied = [False] * len(x)
     for i in range(0, len(DBC)):

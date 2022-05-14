@@ -10,12 +10,13 @@ import time_integrator
 # simulation setup
 side_len = 1
 rho = 1000      # density of square
-k = 2e4         # spring stiffness
+E = 1e5         # Young's modulus
+nu = 0.4        # Poisson's ratio
 n_seg = 4       # num of segments per side of the square
 h = 0.01        # time step size in s
 DBC = [(n_seg + 1) * (n_seg + 1)]       # dirichlet node index
 DBC_v = [np.array([0.0, -0.5])]         # dirichlet node velocity
-DBC_limit = [np.array([0.0, -0.6])]     # dirichlet node limit position
+DBC_limit = [np.array([0.0, -0.7])]     # dirichlet node limit position
 ground_n = np.array([0.0, 1.0])         # normal of the slope
 ground_n /= np.linalg.norm(ground_n)    # normalize ground normal vector just in case
 ground_o = np.array([0.0, -1.0])        # a point on the slope  
@@ -26,12 +27,15 @@ mu = 0.11        # friction coefficient of the slope
 x = np.append(x, [[0.0, side_len * 0.6]], axis=0)   # ceil origin (with normal [0.0, -1.0])
 v = np.array([[0.0, 0.0]] * len(x))                 # velocity
 m = [rho * side_len * side_len / ((n_seg + 1) * (n_seg + 1))] * len(x)  # calculate node mass evenly
-# rest length squared
-l2 = []
+# rest shape basis, volume, and lame parameters
+vol = [0.0] * len(e)
+IB = [np.array([[0.0, 0.0]] * 2)] * len(e)
 for i in range(0, len(e)):
-    diff = x[e[i][0]] - x[e[i][1]]
-    l2.append(diff.dot(diff))
-k = [k] * len(e)    # spring stiffness
+    TB = [x[e[i][1]] - x[e[i][0]], x[e[i][2]] - x[e[i][0]]]
+    vol[i] = np.linalg.det(np.transpose(TB)) / 2
+    IB[i] = np.linalg.inv(np.transpose(TB))
+mu_lame = [0.5 * E / (1 + nu)] * len(e)
+lam = [E * nu / ((1 + nu) * (1 - 2 * nu))] * len(e)
 # identify whether a node is Dirichlet
 is_DBC = [False] * len(x)
 for i in DBC:
@@ -64,6 +68,8 @@ while running:
         screen_projection([x[-1][0] - 3.0, x[-1][1]]))   # ceil
     for eI in e:
         pygame.draw.aaline(screen, (0, 0, 255), screen_projection(x[eI[0]]), screen_projection(x[eI[1]]))
+        pygame.draw.aaline(screen, (0, 0, 255), screen_projection(x[eI[1]]), screen_projection(x[eI[2]]))
+        pygame.draw.aaline(screen, (0, 0, 255), screen_projection(x[eI[2]]), screen_projection(x[eI[0]]))
     for xId in range(0, len(x) - 1):
         xI = x[xId]
         pygame.draw.circle(screen, (0, 0, 255), screen_projection(xI), 0.1 * side_len / n_seg * scale)
@@ -71,7 +77,7 @@ while running:
     pygame.display.flip()   # flip the display
 
     # step forward simulation and wait for screen refresh
-    [x, v] = time_integrator.step_forward(x, e, v, m, l2, k, ground_n, ground_o, contact_area, mu, is_DBC, DBC, DBC_v, DBC_limit, h, 1e-2)
+    [x, v] = time_integrator.step_forward(x, e, v, m, vol, IB, mu_lame, lam, ground_n, ground_o, contact_area, mu, is_DBC, DBC, DBC_v, DBC_limit, h, 1e-2)
     time_step += 1
     pygame.time.wait(int(h * 1000))
 
