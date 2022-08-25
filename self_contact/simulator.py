@@ -8,13 +8,13 @@ import square_mesh   # square mesh
 import time_integrator
 
 # simulation setup
-side_len = 1
+side_len = 0.45
 rho = 1000      # density of square
 E = 1e5         # Young's modulus
 nu = 0.4        # Poisson's ratio
-n_seg = 4       # num of segments per side of the square
+n_seg = 2       # num of segments per side of the square
 h = 0.01        # time step size in s
-DBC = [(n_seg + 1) * (n_seg + 1)]       # dirichlet node index
+DBC = [(n_seg + 1) * (n_seg + 1) * 2]   # dirichlet node index
 DBC_v = [np.array([0.0, -0.5])]         # dirichlet node velocity
 DBC_limit = [np.array([0.0, -0.7])]     # dirichlet node limit position
 ground_n = np.array([0.0, 1.0])         # normal of the slope
@@ -23,7 +23,9 @@ ground_o = np.array([0.0, -1.0])        # a point on the slope
 mu = 0.11        # friction coefficient of the slope
 
 # initialize simulation
-[x, e] = square_mesh.generate(side_len, n_seg)      # node positions and edge node indices
+[x, e] = square_mesh.generate(side_len, n_seg)       # node positions and triangle node indices of the top square
+e = np.append(e, np.array(e) + [len(x)] * 3, axis=0) # add triangle node indices of the bottom square
+x = np.append(x, x + [side_len * 0.1, -side_len * 1.1], axis=0) # add node positions of the bottom square
 x = np.append(x, [[0.0, side_len * 0.6]], axis=0)   # ceil origin (with normal [0.0, -1.0])
 v = np.array([[0.0, 0.0]] * len(x))                 # velocity
 m = [rho * side_len * side_len / ((n_seg + 1) * (n_seg + 1))] * len(x)  # calculate node mass evenly
