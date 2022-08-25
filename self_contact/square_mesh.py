@@ -21,3 +21,22 @@ def generate(side_length, n_seg):
                 e.append([i * (n_seg + 1) + j, (i + 1) * (n_seg + 1) + j + 1, i * (n_seg + 1) + j + 1])
 
     return [x, e]
+
+def find_boundary(e):
+    # index all half-edges for fast query
+    edge_set = set()
+    for i in range(0, len(e)):
+        for j in range(0, 3):
+            edge_set.add((e[i][j], e[i][(j + 1) % 3]))
+
+    # find boundary points and edges
+    bp_set = set()
+    be = []
+    for eI in edge_set:
+        if (eI[1], eI[0]) not in edge_set:
+            # if the inverse edge of a half-edge does not exist,
+            # then it is a boundary edge
+            be.append([eI[0], eI[1]])
+            bp_set.add(eI[0])
+            bp_set.add(eI[1])
+    return [list(bp_set), be]

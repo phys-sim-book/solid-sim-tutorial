@@ -1,4 +1,4 @@
-# Mass-Spring Solids Simulation
+# FEM Solids Simulation
 
 import numpy as np  # numpy for linear algebra
 import pygame       # pygame for visualization
@@ -26,6 +26,7 @@ mu = 0.11        # friction coefficient of the slope
 [x, e] = square_mesh.generate(side_len, n_seg)       # node positions and triangle node indices of the top square
 e = np.append(e, np.array(e) + [len(x)] * 3, axis=0) # add triangle node indices of the bottom square
 x = np.append(x, x + [side_len * 0.1, -side_len * 1.1], axis=0) # add node positions of the bottom square
+[bp, be] = square_mesh.find_boundary(e)             # find boundary points and edges for self-contact
 x = np.append(x, [[0.0, side_len * 0.6]], axis=0)   # ceil origin (with normal [0.0, -1.0])
 v = np.array([[0.0, 0.0]] * len(x))                 # velocity
 m = [rho * side_len * side_len / ((n_seg + 1) * (n_seg + 1))] * len(x)  # calculate node mass evenly
