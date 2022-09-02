@@ -80,7 +80,7 @@ while running:
     pygame.display.flip()   # flip the display
 
     # step forward simulation and wait for screen refresh
-    [x, v] = time_integrator.step_forward(x, e, v, m, vol, IB, mu_lame, lam, ground_n, ground_o, contact_area, mu, is_DBC, DBC, DBC_v, DBC_limit, h, 1e-2)
+    [x, v] = time_integrator.step_forward(x, e, v, m, vol, IB, mu_lame, lam, ground_n, ground_o, bp, be, contact_area, mu, is_DBC, DBC, DBC_v, DBC_limit, h, 1e-2)
     time_step += 1
     pygame.time.wait(int(h * 1000))
 

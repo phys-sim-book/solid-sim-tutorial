@@ -1,7 +1,7 @@
 import numpy as np
 
-import PointPointDistance as PP
-import PointLineDistance as PL
+import distance.PointPointDistance as PP
+import distance.PointLineDistance as PL
 
 def val(p, e0, e1):
     e = e1 - e0
