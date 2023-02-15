@@ -40,7 +40,7 @@ def step_forward(x, e, v, m, vol, IB, mu_lame, lam, n, o, contact_area, mu, is_D
 
         # filter line search
         alpha = min(BarrierEnergy.init_step_size(x, n, o, p), NeoHookeanEnergy.init_step_size(x, e, p))  # avoid interpenetration, tunneling, and inversion
-        while IP_val(x + alpha * p, e, x_tilde, m, vol, IB, mu_lame, lam, n, o, contact_area, (x - x_n) / h, mu_lambda, DBC, DBC_target, DBC_stiff, h) > E_last:
+        while IP_val(x + alpha * p, e, x_tilde, m, vol, IB, mu_lame, lam, n, o, contact_area, (x + alpha * p - x_n) / h, mu_lambda, DBC, DBC_target, DBC_stiff, h) > E_last:
             alpha /= 2
         print('step size =', alpha)
 

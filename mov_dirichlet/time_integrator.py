@@ -40,7 +40,7 @@ def step_forward(x, e, v, m, l2, k, n, o, contact_area, mu, is_DBC, DBC, DBC_v, 
 
         # filter line search
         alpha = BarrierEnergy.init_step_size(x, n, o, p)  # avoid interpenetration and tunneling
-        while IP_val(x + alpha * p, e, x_tilde, m, l2, k, n, o, contact_area, (x - x_n) / h, mu_lambda, DBC, DBC_target, DBC_stiff, h) > E_last:
+        while IP_val(x + alpha * p, e, x_tilde, m, l2, k, n, o, contact_area, (x + alpha * p - x_n) / h, mu_lambda, DBC, DBC_target, DBC_stiff, h) > E_last:
             alpha /= 2
         print('step size =', alpha)
 
