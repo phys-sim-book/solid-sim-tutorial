@@ -147,18 +147,4 @@ def compute_mu_lambda(x, n, o, bp, be, contact_area, mu):
         if d < dhat:
             s = d / dhat
             mu_lambda[i] = mu * -contact_area[i] * dhat * (kappa / 2 * (math.log(s) / dhat + (s - 1) / d))
-    # self-contact
-    mu_lambda_self = []
-    dhat_sqr = dhat * dhat
-    for xI in bp:
-        for eI in be:
-            if xI != eI[0] and xI != eI[1]: # do not consider a point and its incident edge
-                d_sqr = PE.val(x[xI], x[eI[0]], x[eI[1]])
-                if d_sqr < dhat_sqr:
-                    s = d_sqr / dhat_sqr
-                    # since d_sqr is used, need to divide by 8 not 2 here for consistency to linear elasticity
-                    # also, lambda = -\partial b / \partial d = -(\partial b / \partial d^2) * (\partial d^2 / \partial d)
-                    mu_lam = mu * -contact_area[xI] * dhat * (kappa / 8 * (math.log(s) / dhat_sqr + (s - 1) / d_sqr)) * 2 * math.sqrt(d_sqr)
-                    [n, r] = PE.tangent(x[xI], x[eI[0]], x[eI[1]]) # normal and closest point parameterization on the edge
-                    mu_lambda_self.append([xI, eI[0], eI[1], mu_lam, n, r])
-    return [mu_lambda, mu_lambda_self]
+    return mu_lambda

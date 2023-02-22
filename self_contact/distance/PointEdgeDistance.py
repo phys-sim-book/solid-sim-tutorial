@@ -46,15 +46,3 @@ def hess(p, e0, e1):
             np.reshape([H_PP[3, 0:2], np.array([0.0, 0.0]), H_PP[3, 2:4]], (1, 6))[0]])
     else:            # point(p)-line(e0e1) expression
         return PL.hess(p, e0, e1)
-
-# compute normal and the parameterization of the closest point on the edge
-def tangent(p, e0, e1):
-    e = e1 - e0
-    ratio = np.dot(e, p - e0) / np.dot(e, e)
-    if ratio < 0:    # point(p)-point(e0) expression
-        n = p - e0
-    elif ratio > 1:  # point(p)-point(e1) expression
-        n = p - e1
-    else:            # point(p)-line(e0e1) expression
-        n = p - ((1 - ratio) * e0 + ratio * e1)
-    return [n / np.linalg.norm(n), ratio]

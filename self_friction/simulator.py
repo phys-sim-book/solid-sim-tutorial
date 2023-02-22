@@ -20,7 +20,7 @@ DBC_limit = [np.array([0.0, -0.7])]     # dirichlet node limit position
 ground_n = np.array([0.0, 1.0])         # normal of the slope
 ground_n /= np.linalg.norm(ground_n)    # normalize ground normal vector just in case
 ground_o = np.array([0.0, -1.0])        # a point on the slope  
-mu = 0.2        # friction coefficient of the slope
+mu = 0.4        # friction coefficient of the slope
 
 # initialize simulation
 [x, e] = square_mesh.generate(side_len, n_seg)       # node positions and triangle node indices of the top square
