@@ -33,7 +33,7 @@ def val(x, n, o, bp, be, contact_area):
                 if d_sqr < dhat_sqr:
                     s = d_sqr / dhat_sqr
                     # since d_sqr is used, need to divide by 8 not 2 here for consistency to linear elasticity:
-                    sum += contact_area[xI] * dhat * kappa / 8 * (s - 1) * math.log(s)
+                    sum += 0.5 * contact_area[xI] * dhat * kappa / 8 * (s - 1) * math.log(s)
     return sum
 
 def grad(x, n, o, bp, be, contact_area):
@@ -62,7 +62,7 @@ def grad(x, n, o, bp, be, contact_area):
                 if d_sqr < dhat_sqr:
                     s = d_sqr / dhat_sqr
                     # since d_sqr is used, need to divide by 8 not 2 here for consistency to linear elasticity:
-                    local_grad = contact_area[xI] * dhat * (kappa / 8 * (math.log(s) / dhat_sqr + (s - 1) / d_sqr)) * PE.grad(x[xI], x[eI[0]], x[eI[1]])
+                    local_grad = 0.5 * contact_area[xI] * dhat * (kappa / 8 * (math.log(s) / dhat_sqr + (s - 1) / d_sqr)) * PE.grad(x[xI], x[eI[0]], x[eI[1]])
                     g[xI] += local_grad[0:2]
                     g[eI[0]] += local_grad[2:4]
                     g[eI[1]] += local_grad[4:6]
@@ -104,7 +104,7 @@ def hess(x, n, o, bp, be, contact_area):
                     d_sqr_grad = PE.grad(x[xI], x[eI[0]], x[eI[1]])
                     s = d_sqr / dhat_sqr
                     # since d_sqr is used, need to divide by 8 not 2 here for consistency to linear elasticity:
-                    local_hess = contact_area[xI] * dhat * utils.make_PD(kappa / (8 * d_sqr * d_sqr * dhat_sqr) * (d_sqr + dhat_sqr) * np.outer(d_sqr_grad, d_sqr_grad) \
+                    local_hess = 0.5 * contact_area[xI] * dhat * utils.make_PD(kappa / (8 * d_sqr * d_sqr * dhat_sqr) * (d_sqr + dhat_sqr) * np.outer(d_sqr_grad, d_sqr_grad) \
                         + (kappa / 8 * (math.log(s) / dhat_sqr + (s - 1) / d_sqr)) * PE.hess(x[xI], x[eI[0]], x[eI[1]]))
                     index = [xI, eI[0], eI[1]]
                     for nI in range(0, 3):
@@ -158,7 +158,7 @@ def compute_mu_lambda(x, n, o, bp, be, contact_area, mu):
                     s = d_sqr / dhat_sqr
                     # since d_sqr is used, need to divide by 8 not 2 here for consistency to linear elasticity
                     # also, lambda = -\partial b / \partial d = -(\partial b / \partial d^2) * (\partial d^2 / \partial d)
-                    mu_lam = mu * -contact_area[xI] * dhat * (kappa / 8 * (math.log(s) / dhat_sqr + (s - 1) / d_sqr)) * 2 * math.sqrt(d_sqr)
+                    mu_lam = mu * -0.5 * contact_area[xI] * dhat * (kappa / 8 * (math.log(s) / dhat_sqr + (s - 1) / d_sqr)) * 2 * math.sqrt(d_sqr)
                     [n, r] = PE.tangent(x[xI], x[eI[0]], x[eI[1]]) # normal and closest point parameterization on the edge
                     mu_lambda_self.append([xI, eI[0], eI[1], mu_lam, n, r])
     return [mu_lambda, mu_lambda_self]
