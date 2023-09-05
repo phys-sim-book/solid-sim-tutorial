@@ -22,7 +22,7 @@ def hess(x, e, l2, k):
     for i in range(0, len(e)):
         diff = x[e[i][0]] - x[e[i][1]]
         H_diff = 2 * k[i] / l2[i] * (2 * np.outer(diff, diff) + (diff.dot(diff) - l2[i]) * np.identity(2))
-        H_local = utils.make_PD(np.block([[H_diff, -H_diff], [-H_diff, H_diff]]))
+        H_local = utils.make_PSD(np.block([[H_diff, -H_diff], [-H_diff, H_diff]]))
         # add to global matrix
         for nI in range(0, 2):
             for nJ in range(0, 2):

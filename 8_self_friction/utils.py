@@ -2,7 +2,7 @@ import numpy as np
 import numpy.linalg as LA
 import math
 
-def make_PD(hess):
+def make_PSD(hess):
     [lam, V] = LA.eigh(hess)    # Eigen decomposition on symmetric matrix
     # set all negative Eigenvalues to 0
     for i in range(0, len(lam)):

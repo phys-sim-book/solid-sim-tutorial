@@ -104,7 +104,7 @@ def hess(x, n, o, bp, be, contact_area):
                     d_sqr_grad = PE.grad(x[xI], x[eI[0]], x[eI[1]])
                     s = d_sqr / dhat_sqr
                     # since d_sqr is used, need to divide by 8 not 2 here for consistency to linear elasticity:
-                    local_hess = 0.5 * contact_area[xI] * dhat * utils.make_PD(kappa / (8 * d_sqr * d_sqr * dhat_sqr) * (d_sqr + dhat_sqr) * np.outer(d_sqr_grad, d_sqr_grad) \
+                    local_hess = 0.5 * contact_area[xI] * dhat * utils.make_PSD(kappa / (8 * d_sqr * d_sqr * dhat_sqr) * (d_sqr + dhat_sqr) * np.outer(d_sqr_grad, d_sqr_grad) \
                         + (kappa / 8 * (math.log(s) / dhat_sqr + (s - 1) / d_sqr)) * PE.hess(x[xI], x[eI[0]], x[eI[1]]))
                     index = [xI, eI[0], eI[1]]
                     for nI in range(0, 3):

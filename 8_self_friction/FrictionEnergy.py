@@ -71,7 +71,7 @@ def hess(v, mu_lambda, mu_lambda_self, hhat, n):
             inner_term = f1_div_vbarnorm(vbarnorm, epsv) * np.identity(2)
             if vbarnorm != 0:
                 inner_term += f_hess_term(vbarnorm, epsv) / vbarnorm * np.outer(vbar, vbar)
-            local_hess = mu_lambda[i] * T.dot(utils.make_PD(inner_term)).dot(np.transpose(T)) / hhat
+            local_hess = mu_lambda[i] * T.dot(utils.make_PSD(inner_term)).dot(np.transpose(T)) / hhat
             for c in range(0, 2):
                 for r in range(0, 2):
                     IJV[0].append(i * 2 + r)
@@ -87,7 +87,7 @@ def hess(v, mu_lambda, mu_lambda_self, hhat, n):
         inner_term = f1_div_vbarnorm(vbarnorm, epsv) * np.identity(2)
         if vbarnorm != 0:
             inner_term += f_hess_term(vbarnorm, epsv) / vbarnorm * np.outer(vbar, vbar)
-        hess_rel_v = mu_lam * T.dot(utils.make_PD(inner_term)).dot(np.transpose(T)) / hhat
+        hess_rel_v = mu_lam * T.dot(utils.make_PSD(inner_term)).dot(np.transpose(T)) / hhat
         index = [xI, eI0, eI1]
         d_rel_v_dv = [1, -(1 - r), -r]
         for nI in range(0, 3):

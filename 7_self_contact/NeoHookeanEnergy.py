@@ -45,12 +45,12 @@ def dPsi_div_dF(F, mu, lam):
 def d2Psi_div_dF2(F, mu, lam):
     [U, sigma, VT] = polar_svd(F)
 
-    Psi_sigma_sigma = utils.make_PD(d2Psi_div_dsigma2(sigma, mu, lam))
+    Psi_sigma_sigma = utils.make_PSD(d2Psi_div_dsigma2(sigma, mu, lam))
 
     B_left = B_left_coef(sigma, mu, lam)
     Psi_sigma = dPsi_div_dsigma(sigma, mu, lam)
     B_right = (Psi_sigma[0] + Psi_sigma[1]) / (2 * max(sigma[0] + sigma[1], 1e-6))
-    B = utils.make_PD([[B_left + B_right, B_left - B_right], [B_left - B_right, B_left + B_right]])
+    B = utils.make_PSD([[B_left + B_right, B_left - B_right], [B_left - B_right, B_left + B_right]])
 
     M = np.array([[0, 0, 0, 0]] * 4)
     M[0, 0] = Psi_sigma_sigma[0, 0]
