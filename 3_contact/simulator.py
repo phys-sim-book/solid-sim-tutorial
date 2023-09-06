@@ -40,6 +40,7 @@ def screen_projection(x):
     return [offset[0] + scale * x[0], resolution[1] - (offset[1] + scale * x[1])]
 
 time_step = 0
+square_mesh.write_to_file(time_step, x, n_seg)
 screen = pygame.display.set_mode(resolution)
 running = True
 while running:
@@ -64,5 +65,6 @@ while running:
     [x, v] = time_integrator.step_forward(x, e, v, m, l2, k, y_ground, contact_area, is_DBC, h, 1e-2)
     time_step += 1
     pygame.time.wait(int(h * 1000))
+    square_mesh.write_to_file(time_step, x, n_seg)
 
 pygame.quit()
