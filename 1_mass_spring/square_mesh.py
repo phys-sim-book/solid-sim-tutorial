@@ -1,3 +1,4 @@
+# ANCHOR: generate
 import numpy as np
 import os
 
@@ -26,7 +27,9 @@ def generate(side_length, n_seg):
             e.append([(i + 1) * (n_seg + 1) + j, i * (n_seg + 1) + j + 1])
 
     return [x, e]
+# ANCHOR_END: generate
 
+# ANCHOR: write_to_file
 def write_to_file(frameNum, x, n_seg):
     # Check if 'output' directory exists; if not, create it
     if not os.path.exists('output'):
@@ -44,3 +47,4 @@ def write_to_file(frameNum, x, n_seg):
                 #NOTE: each cell is exported as 2 triangles for rendering
                 f.write(f"f {i * (n_seg+1) + j + 1} {(i+1) * (n_seg+1) + j + 1} {(i+1) * (n_seg+1) + j+1 + 1}\n")
                 f.write(f"f {i * (n_seg+1) + j + 1} {(i+1) * (n_seg+1) + j+1 + 1} {i * (n_seg+1) + j+1 + 1}\n")
+# ANCHOR_END: write_to_file
