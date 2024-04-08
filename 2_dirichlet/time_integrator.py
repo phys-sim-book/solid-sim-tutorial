@@ -36,11 +36,13 @@ def step_forward(x, e, v, m, l2, k, is_DBC, h, tol):
     v = (x - x_n) / h   # implicit Euler velocity update
     return [x, v]
 
+# ANCHOR: ADDING_GRAVITY
 def IP_val(x, e, x_tilde, m, l2, k, h):
     return InertiaEnergy.val(x, x_tilde, m) + h * h * (MassSpringEnergy.val(x, e, l2, k) + GravityEnergy.val(x, m))     # implicit Euler
 
 def IP_grad(x, e, x_tilde, m, l2, k, h):
     return InertiaEnergy.grad(x, x_tilde, m) + h * h * (MassSpringEnergy.grad(x, e, l2, k) + GravityEnergy.grad(x, m))   # implicit Euler
+# ANCHOR_END: ADDING_GRAVITY
 
 def IP_hess(x, e, x_tilde, m, l2, k, h):
     IJV_In = InertiaEnergy.hess(x, x_tilde, m)
@@ -50,6 +52,7 @@ def IP_hess(x, e, x_tilde, m, l2, k, h):
     H = sparse.coo_matrix((IJV[2], (IJV[0], IJV[1])), shape=(len(x) * 2, len(x) * 2)).tocsr()
     return H
 
+# ANCHOR: search_dir
 def search_dir(x, e, x_tilde, m, l2, k, is_DBC, h):
     projected_hess = IP_hess(x, e, x_tilde, m, l2, k, h)
     reshaped_grad = IP_grad(x, e, x_tilde, m, l2, k, h).reshape(len(x) * 2, 1)
@@ -61,3 +64,4 @@ def search_dir(x, e, x_tilde, m, l2, k, is_DBC, h):
         if is_DBC[i]:
             reshaped_grad[i * 2] = reshaped_grad[i * 2 + 1] = 0.0
     return spsolve(projected_hess, -reshaped_grad).reshape(len(x), 2)
+#ANCHOR_END: search_dir

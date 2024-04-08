@@ -13,7 +13,9 @@ rho = 1000  # density of square
 k = 1e3     # spring stiffness
 n_seg = 4   # num of segments per side of the square
 h = 0.02    # time step size in s
+# ANCHOR: DBC_def
 DBC = [n_seg, (n_seg + 1) * (n_seg + 1) - 1]  # fix the left and right top nodes
+# ANCHOR_END: DBC_def
 
 # initialize simulation
 [x, e] = square_mesh.generate(side_len, n_seg)  # node positions and edge node indices
@@ -25,10 +27,12 @@ for i in range(0, len(e)):
     diff = x[e[i][0]] - x[e[i][1]]
     l2.append(diff.dot(diff))
 k = [k] * len(e)    # spring stiffness
+# ANCHOR: DBC_mask
 # identify whether a node is Dirichlet
 is_DBC = [False] * len(x)
 for i in DBC:
     is_DBC[i] = True
+# ANCHOR_END: DBC_mask
 # simulation with visualization
 resolution = np.array([900, 900])
 offset = resolution / 2
