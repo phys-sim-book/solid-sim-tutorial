@@ -23,10 +23,12 @@ def step_forward(x, e, v, m, l2, k, y_ground, contact_area, is_DBC, h, tol):
         print('Iteration', iter, ':')
         print('residual =', LA.norm(p, inf) / h)
 
+        # ANCHOR: filter_ls
         # filter line search
         alpha = BarrierEnergy.init_step_size(x, y_ground, p)  # avoid interpenetration and tunneling
         while IP_val(x + alpha * p, e, x_tilde, m, l2, k, y_ground, contact_area, h) > E_last:
             alpha /= 2
+        # ANCHOR_END: filter_ls
         print('step size =', alpha)
 
         x += alpha * p

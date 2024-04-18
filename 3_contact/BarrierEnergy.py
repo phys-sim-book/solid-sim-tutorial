@@ -1,3 +1,4 @@
+# ANCHOR: val_grad_hess
 import math
 import numpy as np
 
@@ -33,10 +34,13 @@ def hess(x, y_ground, contact_area):
         else:
             IJV[2][i] = 0.0
     return IJV
+# ANCHOR_END: val_grad_hess
 
+# ANCHOR: init_step_size
 def init_step_size(x, y_ground, p):
     alpha = 1
     for i in range(0, len(x)):
         if p[i][1] < 0:
             alpha = min(alpha, 0.9 * (y_ground - x[i][1]) / p[i][1])
     return alpha
+# ANCHOR_END: init_step_size

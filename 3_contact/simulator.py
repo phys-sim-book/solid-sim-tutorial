@@ -30,7 +30,9 @@ k = [k] * len(e)    # spring stiffness
 is_DBC = [False] * len(x)
 for i in DBC:
     is_DBC[i] = True
+# ANCHOR: contact_area
 contact_area = [side_len / n_seg] * len(x)     # perimeter split to each node
+# ANCHOR_END: contact_area
 
 # simulation with visualization
 resolution = np.array([900, 900])
