@@ -14,10 +14,14 @@ k = 2e4         # spring stiffness
 n_seg = 4       # num of segments per side of the square
 h = 0.01        # time step size in s
 DBC = []        # no nodes need to be fixed
+# ANCHOR: slope_setup
 ground_n = np.array([0.1, 1.0])     # normal of the slope
 ground_n /= np.linalg.norm(ground_n)    # normalize ground normal vector just in case
 ground_o = np.array([0.0, -1.0])    # a point on the slope  
+# ANCHOR_END: slope_setup
+# ANCHOR: set_mu
 mu = 0.11        # friction coefficient of the slope
+# ANCHOR_END: set_mu
 
 # initialize simulation
 [x, e] = square_mesh.generate(side_len, n_seg)  # node positions and edge node indices
@@ -56,8 +60,10 @@ while running:
 
     # fill the background and draw the square
     screen.fill((255, 255, 255))
+    # ANCHOR: slope_vis
     pygame.draw.aaline(screen, (0, 0, 255), screen_projection([ground_o[0] - 3.0 * ground_n[1], ground_o[1] + 3.0 * ground_n[0]]), 
         screen_projection([ground_o[0] + 3.0 * ground_n[1], ground_o[1] - 3.0 * ground_n[0]]))   # slope
+    # ANCHOR_END: slope_vis
     for eI in e:
         pygame.draw.aaline(screen, (0, 0, 255), screen_projection(x[eI[0]]), screen_projection(x[eI[1]]))
     for xI in x:

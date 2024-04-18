@@ -1,3 +1,4 @@
+# ANCHOR: f_terms
 import numpy as np
 import utils
 
@@ -22,7 +23,9 @@ def f_hess_term(vbarnorm, epsv):
         return -1.0 / (vbarnorm * vbarnorm)
     else:
         return -1.0 / (epsv * epsv)
+# ANCHOR_END: f_terms
 
+# ANCHOR: val_grad_hess
 def val(v, mu_lambda, hhat, n):
     sum = 0.0
     T = np.identity(2) - np.outer(n, n) # tangent of slope is constant
@@ -58,3 +61,4 @@ def hess(v, mu_lambda, hhat, n):
                     IJV[1].append(i * 2 + c)
                     IJV[2] = np.append(IJV[2], local_hess[r, c])
     return IJV
+# ANCHOR_END: val_grad_hess

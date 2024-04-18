@@ -12,12 +12,14 @@ import GravityEnergy
 import BarrierEnergy
 import FrictionEnergy
 
+# ANCHOR: mu_lambda
 def step_forward(x, e, v, m, l2, k, n, o, contact_area, mu, is_DBC, h, tol):
     x_tilde = x + v * h     # implicit Euler predictive position
     x_n = copy.deepcopy(x)
     mu_lambda = BarrierEnergy.compute_mu_lambda(x, n, o, contact_area, mu)  # compute mu * lambda for each node using x^n
 
     # Newton loop
+# ANCHOR_END: mu_lambda
     iter = 0
     E_last = IP_val(x, e, x_tilde, m, l2, k, n, o, contact_area, (x - x_n) / h, mu_lambda, h)
     p = search_dir(x, e, x_tilde, m, l2, k, n, o, contact_area, (x - x_n) / h, mu_lambda, is_DBC, h)
