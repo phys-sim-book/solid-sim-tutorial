@@ -13,17 +13,21 @@ rho = 1000      # density of square
 k = 2e4         # spring stiffness
 n_seg = 4       # num of segments per side of the square
 h = 0.01        # time step size in s
+# ANCHOR: ceiling_dbc_setup
 DBC = [(n_seg + 1) * (n_seg + 1)]       # dirichlet node index
 DBC_v = [np.array([0.0, -0.5])]         # dirichlet node velocity
 DBC_limit = [np.array([0.0, -0.6])]     # dirichlet node limit position
+# ANCHOR_END: ceiling_dbc_setup
 ground_n = np.array([0.0, 1.0])         # normal of the slope
 ground_n /= np.linalg.norm(ground_n)    # normalize ground normal vector just in case
 ground_o = np.array([0.0, -1.0])        # a point on the slope  
 mu = 0.11        # friction coefficient of the slope
 
 # initialize simulation
+# ANCHOR: ceiling_dof
 [x, e] = square_mesh.generate(side_len, n_seg)      # node positions and edge node indices
 x = np.append(x, [[0.0, side_len * 0.6]], axis=0)   # ceil origin (with normal [0.0, -1.0])
+# ANCHOR_END: ceiling_dof
 v = np.array([[0.0, 0.0]] * len(x))                 # velocity
 m = [rho * side_len * side_len / ((n_seg + 1) * (n_seg + 1))] * len(x)  # calculate node mass evenly
 # rest length squared

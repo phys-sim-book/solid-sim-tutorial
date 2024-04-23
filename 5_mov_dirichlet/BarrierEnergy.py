@@ -12,13 +12,14 @@ def val(x, n, o, contact_area):
         if d < dhat:
             s = d / dhat
             sum += contact_area[i] * dhat * kappa / 2 * (s - 1) * math.log(s)
-    # ceil:
+    # ANCHOR: ceiling_val
     n = np.array([0.0, -1.0])
     for i in range(0, len(x) - 1):
         d = n.dot(x[i] - x[-1])
         if d < dhat:
             s = d / dhat
             sum += contact_area[i] * dhat * kappa / 2 * (s - 1) * math.log(s)
+    # ANCHOR_END: ceiling_val
     return sum
 
 def grad(x, n, o, contact_area):
@@ -29,7 +30,7 @@ def grad(x, n, o, contact_area):
         if d < dhat:
             s = d / dhat
             g[i] = contact_area[i] * dhat * (kappa / 2 * (math.log(s) / dhat + (s - 1) / d)) * n
-    # ceil:
+    # ANCHOR: ceiling_grad
     n = np.array([0.0, -1.0])
     for i in range(0, len(x) - 1):
         d = n.dot(x[i] - x[-1])
@@ -38,6 +39,7 @@ def grad(x, n, o, contact_area):
             local_grad = contact_area[i] * dhat * (kappa / 2 * (math.log(s) / dhat + (s - 1) / d)) * n
             g[i] += local_grad
             g[-1] -= local_grad
+    # ANCHOR_END: ceiling_grad
     return g
 
 def hess(x, n, o, contact_area):
@@ -52,7 +54,7 @@ def hess(x, n, o, contact_area):
                     IJV[0].append(i * 2 + r)
                     IJV[1].append(i * 2 + c)
                     IJV[2] = np.append(IJV[2], local_hess[r, c])
-    # ceil:
+    # ANCHOR: ceiling_hess
     n = np.array([0.0, -1.0])
     for i in range(0, len(x) - 1):
         d = n.dot(x[i] - x[-1])
@@ -66,6 +68,7 @@ def hess(x, n, o, contact_area):
                             IJV[0].append(index[nI] * 2 + r)
                             IJV[1].append(index[nJ] * 2 + c)
                             IJV[2] = np.append(IJV[2], ((-1) ** (nI != nJ)) * local_hess[r, c])
+    # ANCHOR_END: ceiling_hess
     return IJV
 
 def init_step_size(x, n, o, p):
@@ -75,12 +78,13 @@ def init_step_size(x, n, o, p):
         p_n = p[i].dot(n)
         if p_n < 0:
             alpha = min(alpha, 0.9 * n.dot(x[i] - o) / -p_n)
-    # ceil:
+    # ANCHOR: ceiling_ccd
     n = np.array([0.0, -1.0])
     for i in range(0, len(x) - 1):
         p_n = (p[i] - p[-1]).dot(n)
         if p_n < 0:
             alpha = min(alpha, 0.9 * n.dot(x[i] - x[-1]) / -p_n)
+    # ANCHOR_END: ceiling_ccd
     return alpha
 
 def compute_mu_lambda(x, n, o, contact_area, mu):

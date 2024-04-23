@@ -17,6 +17,7 @@ def step_forward(x, e, v, m, l2, k, n, o, contact_area, mu, is_DBC, DBC, DBC_v, 
     x_tilde = x + v * h     # implicit Euler predictive position
     x_n = copy.deepcopy(x)
     mu_lambda = BarrierEnergy.compute_mu_lambda(x, n, o, contact_area, mu)  # compute mu * lambda for each node using x^n
+    # ANCHOR: dbc_initialization
     DBC_target = [] # target position of each DBC in the current time step
     for i in range(0, len(DBC)):
         if (DBC_limit[i] - x_n[DBC[i]]).dot(DBC_v[i]) > 0:
@@ -24,10 +25,12 @@ def step_forward(x, e, v, m, l2, k, n, o, contact_area, mu, is_DBC, DBC, DBC_v, 
         else:
             DBC_target.append(x_n[DBC[i]])
     DBC_stiff = 10  # initialize stiffness for DBC springs
+    # ANCHOR_END: dbc_initialization
 
     # Newton loop
     iter = 0
     E_last = IP_val(x, e, x_tilde, m, l2, k, n, o, contact_area, (x - x_n) / h, mu_lambda, DBC, DBC_target, DBC_stiff, h)
+    # ANCHOR: convergence_criteria
     [p, DBC_satisfied] = search_dir(x, e, x_tilde, m, l2, k, n, o, contact_area, (x - x_n) / h, mu_lambda, is_DBC, DBC, DBC_target, DBC_stiff, tol, h)
     while (LA.norm(p, inf) / h > tol) | (sum(DBC_satisfied) != len(DBC)):   # also check whether all DBCs are satisfied
         print('Iteration', iter, ':')
@@ -37,6 +40,7 @@ def step_forward(x, e, v, m, l2, k, n, o, contact_area, mu, is_DBC, DBC, DBC_v, 
             # increase DBC stiffness and recompute energy value record
             DBC_stiff *= 2
             E_last = IP_val(x, e, x_tilde, m, l2, k, n, o, contact_area, (x - x_n) / h, mu_lambda, DBC, DBC_target, DBC_stiff, h)
+        # ANCHOR_END: convergence_criteria
 
         # filter line search
         alpha = BarrierEnergy.init_step_size(x, n, o, p)  # avoid interpenetration and tunneling
@@ -87,11 +91,14 @@ def IP_hess(x, e, x_tilde, m, l2, k, n, o, contact_area, v, mu_lambda, DBC, DBC_
 def search_dir(x, e, x_tilde, m, l2, k, n, o, contact_area, v, mu_lambda, is_DBC, DBC, DBC_target, DBC_stiff, tol, h):
     projected_hess = IP_hess(x, e, x_tilde, m, l2, k, n, o, contact_area, v, mu_lambda, DBC, DBC_target, DBC_stiff, h)
     reshaped_grad = IP_grad(x, e, x_tilde, m, l2, k, n, o, contact_area, v, mu_lambda, DBC, DBC_target, DBC_stiff, h).reshape(len(x) * 2, 1)
+    # ANCHOR: dbc_check
     # check whether each DBC is satisfied
     DBC_satisfied = [False] * len(x)
     for i in range(0, len(DBC)):
         if LA.norm(x[DBC[i]] - DBC_target[i]) / h < tol:
             DBC_satisfied[DBC[i]] = True
+    # ANCHOR_END: dbc_check
+    # ANCHOR: dof_elimination
     # eliminate DOF if it's a satisfied DBC by modifying gradient and Hessian for DBC:
     for i, j in zip(*projected_hess.nonzero()):
         if (is_DBC[int(i / 2)] & DBC_satisfied[int(i / 2)]) | (is_DBC[int(j / 2)] & DBC_satisfied[int(i / 2)]): 
@@ -100,3 +107,4 @@ def search_dir(x, e, x_tilde, m, l2, k, n, o, contact_area, v, mu_lambda, is_DBC
         if is_DBC[i] & DBC_satisfied[i]:
             reshaped_grad[i * 2] = reshaped_grad[i * 2 + 1] = 0.0
     return [spsolve(projected_hess, -reshaped_grad).reshape(len(x), 2), DBC_satisfied]
+    # ANCHOR_END: dof_elimination
