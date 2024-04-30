@@ -10,8 +10,10 @@ import time_integrator
 # simulation setup
 side_len = 1
 rho = 1000      # density of square
+# ANCHOR: lame_param
 E = 1e5         # Young's modulus
 nu = 0.4        # Poisson's ratio
+# ANCHOR_END: lame_param
 n_seg = 4       # num of segments per side of the square
 h = 0.01        # time step size in s
 DBC = [(n_seg + 1) * (n_seg + 1)]       # dirichlet node index
@@ -27,6 +29,7 @@ mu = 0.11        # friction coefficient of the slope
 x = np.append(x, [[0.0, side_len * 0.6]], axis=0)   # ceil origin (with normal [0.0, -1.0])
 v = np.array([[0.0, 0.0]] * len(x))                 # velocity
 m = [rho * side_len * side_len / ((n_seg + 1) * (n_seg + 1))] * len(x)  # calculate node mass evenly
+# ANCHOR: elem_precomp
 # rest shape basis, volume, and lame parameters
 vol = [0.0] * len(e)
 IB = [np.array([[0.0, 0.0]] * 2)] * len(e)
@@ -36,6 +39,7 @@ for i in range(0, len(e)):
     IB[i] = np.linalg.inv(np.transpose(TB))
 mu_lame = [0.5 * E / (1 + nu)] * len(e)
 lam = [E * nu / ((1 + nu) * (1 - 2 * nu))] * len(e)
+# ANCHOR_END: elem_precomp
 # identify whether a node is Dirichlet
 is_DBC = [False] * len(x)
 for i in DBC:
@@ -68,9 +72,11 @@ while running:
     pygame.draw.aaline(screen, (0, 0, 255), screen_projection([x[-1][0] + 3.0, x[-1][1]]), 
         screen_projection([x[-1][0] - 3.0, x[-1][1]]))   # ceil
     for eI in e:
+        # ANCHOR: draw_tri
         pygame.draw.aaline(screen, (0, 0, 255), screen_projection(x[eI[0]]), screen_projection(x[eI[1]]))
         pygame.draw.aaline(screen, (0, 0, 255), screen_projection(x[eI[1]]), screen_projection(x[eI[2]]))
         pygame.draw.aaline(screen, (0, 0, 255), screen_projection(x[eI[2]]), screen_projection(x[eI[0]]))
+        # ANCHOR_END: draw_tri
     for xId in range(0, len(x) - 1):
         xI = x[xId]
         pygame.draw.circle(screen, (0, 0, 255), screen_projection(xI), 0.1 * side_len / n_seg * scale)

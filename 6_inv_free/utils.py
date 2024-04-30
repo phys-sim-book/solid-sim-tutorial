@@ -9,6 +9,7 @@ def make_PSD(hess):
         lam[i] = max(0, lam[i])
     return np.matmul(np.matmul(V, np.diag(lam)), np.transpose(V))
 
+# ANCHOR: find_positive_real_root
 def smallest_positive_real_root_quad(a, b, c, tol = 1e-6):
     # return negative value if no positive real root is found
     t = 0
@@ -26,3 +27,4 @@ def smallest_positive_real_root_quad(a, b, c, tol = 1e-6):
         else: # desv<0 ==> imag, f(x) > 0 for all x > 0
             t = -1
     return t
+# ANCHOR_END: find_positive_real_root

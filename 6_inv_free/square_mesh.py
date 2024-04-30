@@ -9,6 +9,7 @@ def generate(side_length, n_seg):
         for j in range(0, n_seg + 1):
             x[i * (n_seg + 1) + j] = [-side_length / 2 + i * step, -side_length / 2 + j * step]
     
+    # ANCHOR: tri_vert_ind
     # connect the nodes with triangle elements
     e = []
     for i in range(0, n_seg):
@@ -20,6 +21,7 @@ def generate(side_length, n_seg):
             else:
                 e.append([i * (n_seg + 1) + j, (i + 1) * (n_seg + 1) + j, (i + 1) * (n_seg + 1) + j + 1])
                 e.append([i * (n_seg + 1) + j, (i + 1) * (n_seg + 1) + j + 1, i * (n_seg + 1) + j + 1])
+    # ANCHOR_END: tri_vert_ind
 
     return [x, e]
 

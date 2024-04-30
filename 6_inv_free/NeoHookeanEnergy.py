@@ -1,3 +1,4 @@
+# ANCHOR: helper_func
 import utils
 import numpy as np
 import math
@@ -78,7 +79,9 @@ def d2Psi_div_dF2(F, mu, lam):
                         + M[3, 0] * U[i, 1] * VT[1, j] * U[r, 0] * VT[0, s] \
                         + M[3, 3] * U[i, 1] * VT[1, j] * U[r, 1] * VT[1, s]
     return dP_div_dF
+# ANCHOR_END: helper_func
 
+# ANCHOR: stress_deriv
 def deformation_grad(x, elemVInd, IB):
     F = [x[elemVInd[1]] - x[elemVInd[0]], x[elemVInd[2]] - x[elemVInd[0]]]
     return np.transpose(F).dot(IB)
@@ -124,7 +127,9 @@ def d2Psi_div_dx2(dP_div_dF, IB):  # applying chain-rule, d2Psi_div_dx2 = dF_div
         result[0, colI] = -_000 - _101 - _010 - _111
         result[1, colI] = -_200 - _301 - _210 - _311
     return result
+# ANCHOR_END: stress_deriv
 
+# ANCHOR: val_grad_hess
 def val(x, e, vol, IB, mu, lam):
     sum = 0.0
     for i in range(0, len(e)):
@@ -157,7 +162,9 @@ def hess(x, e, vol, IB, mu, lam):
                         IJV[1][ind] = e[i][xJ] * 2 + dJ
                         IJV[2][ind] = local_hess[xI * 2 + dI, xJ * 2 + dJ]
     return IJV
+# ANCHOR_END: val_grad_hess
 
+# ANCHOR: filter_line_search
 def init_step_size(x, e, p):
     alpha = 1
     for i in range(0, len(e)):
@@ -173,3 +180,4 @@ def init_step_size(x, e, p):
         if critical_alpha > 0:
             alpha = min(alpha, critical_alpha)
     return alpha
+# ANCHOR_END: filter_line_search
