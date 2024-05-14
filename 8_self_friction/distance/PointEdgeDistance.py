@@ -47,6 +47,7 @@ def hess(p, e0, e1):
     else:            # point(p)-line(e0e1) expression
         return PL.hess(p, e0, e1)
 
+# ANCHOR: tangent
 # compute normal and the parameterization of the closest point on the edge
 def tangent(p, e0, e1):
     e = e1 - e0
@@ -58,3 +59,4 @@ def tangent(p, e0, e1):
     else:            # point(p)-line(e0e1) expression
         n = p - ((1 - ratio) * e0 + ratio * e1)
     return [n / np.linalg.norm(n), ratio]
+# ANCHOR_END: tangent

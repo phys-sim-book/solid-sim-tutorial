@@ -31,6 +31,7 @@ def val(v, mu_lambda, mu_lambda_self, hhat, n):
         if mu_lambda[i] > 0:
             vbar = np.transpose(T).dot(v[i])
             sum += mu_lambda[i] * f0(np.linalg.norm(vbar), epsv, hhat)
+    # ANCHOR: val
     # self-contact:
     for i in range(0, len(mu_lambda_self)):
         [xI, eI0, eI1, mu_lam, n, r] = mu_lambda_self[i]
@@ -38,6 +39,7 @@ def val(v, mu_lambda, mu_lambda_self, hhat, n):
         rel_v = v[xI] - ((1 - r) * v[eI0] + r * v[eI1])
         vbar = np.transpose(T).dot(rel_v)
         sum += mu_lam * f0(np.linalg.norm(vbar), epsv, hhat)
+    # ANCHOR_END: val
     return sum
 
 def grad(v, mu_lambda, mu_lambda_self, hhat, n):
@@ -48,6 +50,7 @@ def grad(v, mu_lambda, mu_lambda_self, hhat, n):
         if mu_lambda[i] > 0:
             vbar = np.transpose(T).dot(v[i])
             g[i] = mu_lambda[i] * f1_div_vbarnorm(np.linalg.norm(vbar), epsv) * T.dot(vbar)
+    # ANCHOR: grad
     # self-contact:
     for i in range(0, len(mu_lambda_self)):
         [xI, eI0, eI1, mu_lam, n, r] = mu_lambda_self[i]
@@ -58,6 +61,7 @@ def grad(v, mu_lambda, mu_lambda_self, hhat, n):
         g[xI] += g_rel_v
         g[eI0] += g_rel_v * -(1 - r)
         g[eI1] += g_rel_v * -r
+    # ANCHOR_END: grad
     return g
 
 def hess(v, mu_lambda, mu_lambda_self, hhat, n):
@@ -77,6 +81,7 @@ def hess(v, mu_lambda, mu_lambda_self, hhat, n):
                     IJV[0].append(i * 2 + r)
                     IJV[1].append(i * 2 + c)
                     IJV[2] = np.append(IJV[2], local_hess[r, c])
+    # ANCHOR: hess
     # self-contact:
     for i in range(0, len(mu_lambda_self)):
         [xI, eI0, eI1, mu_lam, n, r] = mu_lambda_self[i]
@@ -97,4 +102,5 @@ def hess(v, mu_lambda, mu_lambda_self, hhat, n):
                         IJV[0].append(index[nI] * 2 + r)
                         IJV[1].append(index[nJ] * 2 + c)
                         IJV[2] = np.append(IJV[2], d_rel_v_dv[nI] * d_rel_v_dv[nJ] * hess_rel_v[r, c])
+    # ANCHOR_END: hess
     return IJV
