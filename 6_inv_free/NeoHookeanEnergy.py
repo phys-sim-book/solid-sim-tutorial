@@ -72,10 +72,10 @@ def d2Psi_div_dF2(F, mu, lam):
                     rs = s * 2 + r
                     dP_div_dF[ij, rs] = M[0, 0] * U[i, 0] * VT[0, j] * U[r, 0] * VT[0, s] \
                         + M[0, 3] * U[i, 0] * VT[0, j] * U[r, 1] * VT[1, s] \
-                        + M[1, 1] * U[i, 0] * VT[1, j] * U[r, 0] * VT[1, s] \
-                        + M[1, 2] * U[i, 0] * VT[1, j] * U[r, 1] * VT[0, s] \
-                        + M[2, 1] * U[i, 1] * VT[0, j] * U[r, 0] * VT[1, s] \
-                        + M[2, 2] * U[i, 1] * VT[0, j] * U[r, 1] * VT[0, s] \
+                        + M[1, 1] * U[i, 1] * VT[0, j] * U[r, 1] * VT[0, s] \
+                        + M[1, 2] * U[i, 1] * VT[0, j] * U[r, 0] * VT[1, s] \
+                        + M[2, 1] * U[i, 0] * VT[1, j] * U[r, 1] * VT[0, s] \
+                        + M[2, 2] * U[i, 0] * VT[1, j] * U[r, 0] * VT[1, s] \
                         + M[3, 0] * U[i, 1] * VT[1, j] * U[r, 0] * VT[0, s] \
                         + M[3, 3] * U[i, 1] * VT[1, j] * U[r, 1] * VT[1, s]
     return dP_div_dF
