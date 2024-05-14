@@ -1,3 +1,4 @@
+# ANCHOR: PE_val_grad
 import numpy as np
 
 import distance.PointPointDistance as PP
@@ -24,6 +25,7 @@ def grad(p, e0, e1):
         return np.reshape([g_PP[0:2], np.array([0.0, 0.0]), g_PP[2:4]], (1, 6))[0]
     else:            # point(p)-line(e0e1) expression
         return PL.grad(p, e0, e1)
+# ANCHOR_END: PE_val_grad
 
 def hess(p, e0, e1):
     e = e1 - e0

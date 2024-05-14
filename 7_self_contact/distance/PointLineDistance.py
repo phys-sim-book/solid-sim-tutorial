@@ -1,3 +1,4 @@
+# ANCHOR: PL_val_grad
 import numpy as np
 
 def val(p, e0, e1):
@@ -23,6 +24,7 @@ def grad(p, e0, e1):
     g[4] = t27 + t24 * (p[1] - e0[1]) * 2.0
     g[5] = t26 - t24 * (p[0] - e0[0]) * 2.0
     return g
+# ANCHOR_END: PL_val_grad
 
 def hess(p, e0, e1):
     H = np.array([0.0] * 36)

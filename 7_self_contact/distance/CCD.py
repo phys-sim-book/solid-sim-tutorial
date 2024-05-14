@@ -1,3 +1,4 @@
+# ANCHOR: broad_phase
 from copy import deepcopy
 import numpy as np
 import math
@@ -14,7 +15,9 @@ def bbox_overlap(p, e0, e1, dp, de0, de1, toc_upperbound):
         return False
     else:
         return True
+# ANCHOR_END: broad_phase
 
+# ANCHOR: accd
 # compute the first "time" of contact, or toc,
 # return the computed toc only if it is smaller than the previously computed toc_upperbound
 def narrow_phase_CCD(_p, _e0, _e1, _dp, _de0, _de1, toc_upperbound):
@@ -57,3 +60,4 @@ def narrow_phase_CCD(_p, _e0, _e1, _dp, _de0, _de1, toc_upperbound):
             return toc_upperbound
 
     return toc
+# ANCHOR_END: accd

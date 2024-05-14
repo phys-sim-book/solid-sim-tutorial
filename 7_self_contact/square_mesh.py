@@ -23,6 +23,7 @@ def generate(side_length, n_seg):
 
     return [x, e]
 
+# ANCHOR: find_boundary
 def find_boundary(e):
     # index all half-edges for fast query
     edge_set = set()
@@ -41,6 +42,7 @@ def find_boundary(e):
             bp_set.add(eI[0])
             bp_set.add(eI[1])
     return [list(bp_set), be]
+# ANCHOR_END: find_boundary
 
 def write_to_file(frameNum, x, e):
     # Check if 'output' directory exists; if not, create it

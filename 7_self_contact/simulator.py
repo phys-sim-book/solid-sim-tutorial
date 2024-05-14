@@ -7,6 +7,7 @@ pygame.init()
 import square_mesh   # square mesh
 import time_integrator
 
+# ANCHOR: sim_setup
 # simulation setup
 side_len = 0.45
 rho = 1000      # density of square
@@ -26,6 +27,7 @@ mu = 0.4        # friction coefficient of the slope
 [x, e] = square_mesh.generate(side_len, n_seg)       # node positions and triangle node indices of the top square
 e = np.append(e, np.array(e) + [len(x)] * 3, axis=0) # add triangle node indices of the bottom square
 x = np.append(x, x + [side_len * 0.1, -side_len * 1.1], axis=0) # add node positions of the bottom square
+# ANCHOR_END: sim_setup
 [bp, be] = square_mesh.find_boundary(e)             # find boundary points and edges for self-contact
 x = np.append(x, [[0.0, side_len * 0.6]], axis=0)   # ceil origin (with normal [0.0, -1.0])
 v = np.array([[0.0, 0.0]] * len(x))                 # velocity

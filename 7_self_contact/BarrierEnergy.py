@@ -24,6 +24,7 @@ def val(x, n, o, bp, be, contact_area):
         if d < dhat:
             s = d / dhat
             sum += contact_area[i] * dhat * kappa / 2 * (s - 1) * math.log(s)
+    # ANCHOR: value
     # self-contact
     dhat_sqr = dhat * dhat
     for xI in bp:
@@ -34,6 +35,7 @@ def val(x, n, o, bp, be, contact_area):
                     s = d_sqr / dhat_sqr
                     # since d_sqr is used, need to divide by 8 not 2 here for consistency to linear elasticity:
                     sum += 0.5 * contact_area[xI] * dhat * kappa / 8 * (s - 1) * math.log(s)
+    # ANCHOR_END: value
     return sum
 
 def grad(x, n, o, bp, be, contact_area):
@@ -53,6 +55,7 @@ def grad(x, n, o, bp, be, contact_area):
             local_grad = contact_area[i] * dhat * (kappa / 2 * (math.log(s) / dhat + (s - 1) / d)) * n
             g[i] += local_grad
             g[-1] -= local_grad
+    # ANCHOR: gradient
     # self-contact
     dhat_sqr = dhat * dhat
     for xI in bp:
@@ -66,6 +69,7 @@ def grad(x, n, o, bp, be, contact_area):
                     g[xI] += local_grad[0:2]
                     g[eI[0]] += local_grad[2:4]
                     g[eI[1]] += local_grad[4:6]
+    # ANCHOR_END: gradient
     return g
 
 def hess(x, n, o, bp, be, contact_area):
@@ -94,6 +98,7 @@ def hess(x, n, o, bp, be, contact_area):
                             IJV[0].append(index[nI] * 2 + r)
                             IJV[1].append(index[nJ] * 2 + c)
                             IJV[2] = np.append(IJV[2], ((-1) ** (nI != nJ)) * local_hess[r, c])
+    # ANCHOR: Hessian
     # self-contact
     dhat_sqr = dhat * dhat
     for xI in bp:
@@ -114,6 +119,7 @@ def hess(x, n, o, bp, be, contact_area):
                                     IJV[0].append(index[nI] * 2 + r)
                                     IJV[1].append(index[nJ] * 2 + c)
                                     IJV[2] = np.append(IJV[2], local_hess[nI * 2 + r, nJ * 2 + c])
+    # ANCHOR_END: Hessian
     return IJV
 
 def init_step_size(x, n, o, bp, be, p):
@@ -129,6 +135,7 @@ def init_step_size(x, n, o, bp, be, p):
         p_n = (p[i] - p[-1]).dot(n)
         if p_n < 0:
             alpha = min(alpha, 0.9 * n.dot(x[i] - x[-1]) / -p_n)
+    # ANCHOR: line_search_filtering
     # self-contact
     for xI in bp:
         for eI in be:
@@ -137,6 +144,7 @@ def init_step_size(x, n, o, bp, be, p):
                     toc = CCD.narrow_phase_CCD(x[xI], x[eI[0]], x[eI[1]], p[xI], p[eI[0]], p[eI[1]], alpha)
                     if alpha > toc:
                         alpha = toc
+    # ANCHOR_END: line_search_filtering
     return alpha
 
 def compute_mu_lambda(x, n, o, bp, be, contact_area, mu):
