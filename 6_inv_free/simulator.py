@@ -14,7 +14,7 @@ rho = 1000      # density of square
 E = 1e5         # Young's modulus
 nu = 0.4        # Poisson's ratio
 # ANCHOR_END: lame_param
-n_seg = 4       # num of segments per side of the square
+n_seg = 4      # num of segments per side of the square
 h = 0.01        # time step size in s
 DBC = [(n_seg + 1) * (n_seg + 1)]       # dirichlet node index
 DBC_v = [np.array([0.0, -0.5])]         # dirichlet node velocity
@@ -50,6 +50,7 @@ contact_area = [side_len / n_seg] * len(x)     # perimeter split to each node
 resolution = np.array([900, 900])
 offset = resolution / 2
 scale = 200
+DBC_stiff = [1000]
 def screen_projection(x):
     return [offset[0] + scale * x[0], resolution[1] - (offset[1] + scale * x[1])]
 
@@ -84,7 +85,7 @@ while running:
     pygame.display.flip()   # flip the display
 
     # step forward simulation and wait for screen refresh
-    [x, v] = time_integrator.step_forward(x, e, v, m, vol, IB, mu_lame, lam, ground_n, ground_o, contact_area, mu, is_DBC, DBC, DBC_v, DBC_limit, h, 1e-2)
+    [x, v] = time_integrator.step_forward(x, e, v, m, vol, IB, mu_lame, lam, ground_n, ground_o, contact_area, mu, is_DBC, DBC, DBC_v, DBC_limit,DBC_stiff, h, 1e-2)
     time_step += 1
     pygame.time.wait(int(h * 1000))
     square_mesh.write_to_file(time_step, x, e)
