@@ -13,7 +13,7 @@ import BarrierEnergy
 import FrictionEnergy
 import SpringEnergy
 
-def step_forward(x, e, v, m, l2, k, n, o, contact_area, mu, is_DBC, DBC, DBC_v, DBC_limit, h, tol):
+def step_forward(x, e, v, m, l2, k, n, o, contact_area, mu, is_DBC, DBC, DBC_v, DBC_limit, DBC_stiff, h, tol):
     x_tilde = x + v * h     # implicit Euler predictive position
     x_n = copy.deepcopy(x)
     mu_lambda = BarrierEnergy.compute_mu_lambda(x, n, o, contact_area, mu)  # compute mu * lambda for each node using x^n
@@ -24,33 +24,32 @@ def step_forward(x, e, v, m, l2, k, n, o, contact_area, mu, is_DBC, DBC, DBC_v, 
             DBC_target.append(x_n[DBC[i]] + h * DBC_v[i])
         else:
             DBC_target.append(x_n[DBC[i]])
-    DBC_stiff = 10  # initialize stiffness for DBC springs
     # ANCHOR_END: dbc_initialization
 
     # Newton loop
     iter = 0
-    E_last = IP_val(x, e, x_tilde, m, l2, k, n, o, contact_area, (x - x_n) / h, mu_lambda, DBC, DBC_target, DBC_stiff, h)
+    E_last = IP_val(x, e, x_tilde, m, l2, k, n, o, contact_area, (x - x_n) / h, mu_lambda, DBC, DBC_target, DBC_stiff[0], h)
     # ANCHOR: convergence_criteria
-    [p, DBC_satisfied] = search_dir(x, e, x_tilde, m, l2, k, n, o, contact_area, (x - x_n) / h, mu_lambda, is_DBC, DBC, DBC_target, DBC_stiff, tol, h)
+    [p, DBC_satisfied] = search_dir(x, e, x_tilde, m, l2, k, n, o, contact_area, (x - x_n) / h, mu_lambda, is_DBC, DBC, DBC_target, DBC_stiff[0], tol, h)
     while (LA.norm(p, inf) / h > tol) | (sum(DBC_satisfied) != len(DBC)):   # also check whether all DBCs are satisfied
         print('Iteration', iter, ':')
         print('residual =', LA.norm(p, inf) / h)
 
         if (LA.norm(p, inf) / h <= tol) & (sum(DBC_satisfied) != len(DBC)):
             # increase DBC stiffness and recompute energy value record
-            DBC_stiff *= 2
-            E_last = IP_val(x, e, x_tilde, m, l2, k, n, o, contact_area, (x - x_n) / h, mu_lambda, DBC, DBC_target, DBC_stiff, h)
+            DBC_stiff[0] *= 2
+            E_last = IP_val(x, e, x_tilde, m, l2, k, n, o, contact_area, (x - x_n) / h, mu_lambda, DBC, DBC_target, DBC_stiff[0], h)
         # ANCHOR_END: convergence_criteria
 
         # filter line search
         alpha = BarrierEnergy.init_step_size(x, n, o, p)  # avoid interpenetration and tunneling
-        while IP_val(x + alpha * p, e, x_tilde, m, l2, k, n, o, contact_area, (x + alpha * p - x_n) / h, mu_lambda, DBC, DBC_target, DBC_stiff, h) > E_last:
+        while IP_val(x + alpha * p, e, x_tilde, m, l2, k, n, o, contact_area, (x + alpha * p - x_n) / h, mu_lambda, DBC, DBC_target, DBC_stiff[0], h) > E_last:
             alpha /= 2
         print('step size =', alpha)
 
         x += alpha * p
-        E_last = IP_val(x, e, x_tilde, m, l2, k, n, o, contact_area, (x - x_n) / h, mu_lambda, DBC, DBC_target, DBC_stiff, h)
-        [p, DBC_satisfied] = search_dir(x, e, x_tilde, m, l2, k, n, o, contact_area, (x - x_n) / h, mu_lambda, is_DBC, DBC, DBC_target, DBC_stiff, tol, h)
+        E_last = IP_val(x, e, x_tilde, m, l2, k, n, o, contact_area, (x - x_n) / h, mu_lambda, DBC, DBC_target, DBC_stiff[0], h)
+        [p, DBC_satisfied] = search_dir(x, e, x_tilde, m, l2, k, n, o, contact_area, (x - x_n) / h, mu_lambda, is_DBC, DBC, DBC_target, DBC_stiff[0], tol, h)
         iter += 1
 
     v = (x - x_n) / h   # implicit Euler velocity update

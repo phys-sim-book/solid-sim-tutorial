@@ -45,6 +45,7 @@ lam = [E * nu / ((1 + nu) * (1 - 2 * nu))] * len(e)
 is_DBC = [False] * len(x)
 for i in DBC:
     is_DBC[i] = True
+DBC_stiff = [1000]  # DBC stiffness, adjusted and warm-started across time steps
 contact_area = [side_len / n_seg] * len(x)     # perimeter split to each node
 
 # simulation with visualization
@@ -83,7 +84,7 @@ while running:
     pygame.display.flip()   # flip the display
 
     # step forward simulation and wait for screen refresh
-    [x, v] = time_integrator.step_forward(x, e, v, m, vol, IB, mu_lame, lam, ground_n, ground_o, bp, be, contact_area, mu, is_DBC, DBC, DBC_v, DBC_limit, h, 1e-2)
+    [x, v] = time_integrator.step_forward(x, e, v, m, vol, IB, mu_lame, lam, ground_n, ground_o, bp, be, contact_area, mu, is_DBC, DBC, DBC_v, DBC_limit, DBC_stiff, h, 1e-2)
     time_step += 1
     pygame.time.wait(int(h * 1000))
     square_mesh.write_to_file(time_step, x, e)

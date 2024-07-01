@@ -44,13 +44,13 @@ lam = [E * nu / ((1 + nu) * (1 - 2 * nu))] * len(e)
 is_DBC = [False] * len(x)
 for i in DBC:
     is_DBC[i] = True
+DBC_stiff = [1000]  # DBC stiffness, adjusted and warm-started across time steps
 contact_area = [side_len / n_seg] * len(x)     # perimeter split to each node
 
 # simulation with visualization
 resolution = np.array([900, 900])
 offset = resolution / 2
 scale = 200
-DBC_stiff = [1000]
 def screen_projection(x):
     return [offset[0] + scale * x[0], resolution[1] - (offset[1] + scale * x[1])]
 
