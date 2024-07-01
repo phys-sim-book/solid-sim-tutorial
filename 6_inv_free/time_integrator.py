@@ -100,7 +100,7 @@ def search_dir(x, e, x_tilde, m, vol, IB, mu_lame, lam, n, o, contact_area, v, m
             DBC_satisfied[DBC[i]] = True
     # eliminate DOF if it's a satisfied DBC by modifying gradient and Hessian for DBC:
     for i, j in zip(*projected_hess.nonzero()):
-        if (is_DBC[int(i / 2)] & DBC_satisfied[int(i / 2)]) | (is_DBC[int(j / 2)] & DBC_satisfied[int(i / 2)]): 
+        if (is_DBC[int(i / 2)] & DBC_satisfied[int(i / 2)]) | (is_DBC[int(j / 2)] & DBC_satisfied[int(j / 2)]): 
             projected_hess[i, j] = (i == j)
     for i in range(0, len(x)):
         if is_DBC[i] & DBC_satisfied[i]:
