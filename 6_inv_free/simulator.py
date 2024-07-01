@@ -14,7 +14,7 @@ rho = 1000      # density of square
 E = 1e5         # Young's modulus
 nu = 0.4        # Poisson's ratio
 # ANCHOR_END: lame_param
-n_seg = 6      # num of segments per side of the square
+n_seg = 4      # num of segments per side of the square
 h = 0.01        # time step size in s
 DBC = [(n_seg + 1) * (n_seg + 1)]       # dirichlet node index
 DBC_v = [np.array([0.0, -0.5])]         # dirichlet node velocity
