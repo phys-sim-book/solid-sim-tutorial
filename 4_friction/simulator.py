@@ -10,8 +10,8 @@ import time_integrator
 # simulation setup
 side_len = 1
 rho = 1000      # density of square
-k = 2e4         # spring stiffness
-n_seg = 4       # num of segments per side of the square
+k = 4e4         # spring stiffness
+n_seg = 10       # num of segments per side of the square
 h = 0.01        # time step size in s
 DBC = []        # no nodes need to be fixed
 # ANCHOR: slope_setup

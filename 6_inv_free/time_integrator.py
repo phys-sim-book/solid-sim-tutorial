@@ -13,7 +13,10 @@ import BarrierEnergy
 import FrictionEnergy
 import SpringEnergy
 
-def step_forward(x, e, v, m, vol, IB, mu_lame, lam, n, o, contact_area, mu, is_DBC, DBC, DBC_v, DBC_limit, h, tol):
+
+
+
+def step_forward(x, e, v, m, vol, IB, mu_lame, lam, n, o, contact_area, mu, is_DBC, DBC, DBC_v, DBC_limit, DBC_stiff_,h, tol):
     x_tilde = x + v * h     # implicit Euler predictive position
     x_n = copy.deepcopy(x)
     mu_lambda = BarrierEnergy.compute_mu_lambda(x, n, o, contact_area, mu)  # compute mu * lambda for each node using x^n
@@ -23,7 +26,7 @@ def step_forward(x, e, v, m, vol, IB, mu_lame, lam, n, o, contact_area, mu, is_D
             DBC_target.append(x_n[DBC[i]] + h * DBC_v[i])
         else:
             DBC_target.append(x_n[DBC[i]])
-    DBC_stiff = 1000  # initialize stiffness for DBC springs
+    DBC_stiff = DBC_stiff_[0]
 
     # Newton loop
     iter = 0
@@ -35,7 +38,8 @@ def step_forward(x, e, v, m, vol, IB, mu_lame, lam, n, o, contact_area, mu, is_D
 
         if (LA.norm(p, inf) / h <= tol) & (sum(DBC_satisfied) != len(DBC)):
             # increase DBC stiffness and recompute energy value record
-            DBC_stiff *= 2
+            DBC_stiff_[0] *= 2
+            DBC_stiff = DBC_stiff_[0]
             E_last = IP_val(x, e, x_tilde, m, vol, IB, mu_lame, lam, n, o, contact_area, (x - x_n) / h, mu_lambda, DBC, DBC_target, DBC_stiff, h)
 
         # filter line search
