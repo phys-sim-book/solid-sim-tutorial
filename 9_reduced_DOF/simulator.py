@@ -10,11 +10,11 @@ import time_integrator
 
 # simulation setup
 side_len = 1
-rho = 2000      # density of square
-E = 1e4         # Young's modulus
+rho = 1000      # density of square
+E = 2e4         # Young's modulus
 nu = 0.4        # Poisson's ratio
 n_seg = 10       # num of segments per side of the square
-h = 0.04        # time step size in s
+h = 0.01        # time step size in s
 DBC = []        # no nodes need to be fixed
 y_ground = -1   # height of the planar ground
 
