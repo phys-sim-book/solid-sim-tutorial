@@ -4,6 +4,7 @@ import numpy as np  # numpy for linear algebra
 import pygame       # pygame for visualization
 pygame.init()
 
+import utils
 import square_mesh   # square mesh
 import time_integrator
 
@@ -33,6 +34,8 @@ for i in DBC:
 # ANCHOR: contact_area
 contact_area = [side_len / n_seg] * len(x)     # perimeter split to each node
 # ANCHOR_END: contact_area
+# compute reduced basis using 0: polynomial functions or 1: modal reduction
+reduced_basis = utils.compute_reduced_basis(x, e, l2, k, is_DBC, method=0, order=3)
 
 # simulation with visualization
 resolution = np.array([900, 900])
@@ -64,7 +67,7 @@ while running:
     pygame.display.flip()   # flip the display
 
     # step forward simulation and wait for screen refresh
-    [x, v] = time_integrator.step_forward(x, e, v, m, l2, k, y_ground, contact_area, is_DBC, h, 1e-2)
+    [x, v] = time_integrator.step_forward(x, e, v, m, l2, k, y_ground, contact_area, is_DBC, reduced_basis, h, 1e-2)
     time_step += 1
     pygame.time.wait(int(h * 1000))
     square_mesh.write_to_file(time_step, x, n_seg)

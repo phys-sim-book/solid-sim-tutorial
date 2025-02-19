@@ -11,14 +11,14 @@ import MassSpringEnergy
 import GravityEnergy
 import BarrierEnergy
 
-def step_forward(x, e, v, m, l2, k, y_ground, contact_area, is_DBC, h, tol):
+def step_forward(x, e, v, m, l2, k, y_ground, contact_area, is_DBC, reduced_basis, h, tol):
     x_tilde = x + v * h     # implicit Euler predictive position
     x_n = copy.deepcopy(x)
 
     # Newton loop
     iter = 0
     E_last = IP_val(x, e, x_tilde, m, l2, k, y_ground, contact_area, h)
-    p = search_dir(x, e, x_tilde, m, l2, k, y_ground, contact_area, is_DBC, h)
+    p = search_dir(x, e, x_tilde, m, l2, k, y_ground, contact_area, is_DBC, reduced_basis, h)
     while LA.norm(p, inf) / h > tol:
         print('Iteration', iter, ':')
         print('residual =', LA.norm(p, inf) / h)
@@ -33,7 +33,7 @@ def step_forward(x, e, v, m, l2, k, y_ground, contact_area, is_DBC, h, tol):
 
         x += alpha * p
         E_last = IP_val(x, e, x_tilde, m, l2, k, y_ground, contact_area, h)
-        p = search_dir(x, e, x_tilde, m, l2, k, y_ground, contact_area, is_DBC, h)
+        p = search_dir(x, e, x_tilde, m, l2, k, y_ground, contact_area, is_DBC, reduced_basis, h)
         iter += 1
 
     v = (x - x_n) / h   # implicit Euler velocity update
@@ -56,7 +56,7 @@ def IP_hess(x, e, x_tilde, m, l2, k, y_ground, contact_area, h):
     H = sparse.coo_matrix((IJV[2], (IJV[0], IJV[1])), shape=(len(x) * 2, len(x) * 2)).tocsr()
     return H
 
-def search_dir(x, e, x_tilde, m, l2, k, y_ground, contact_area, is_DBC, h):
+def search_dir(x, e, x_tilde, m, l2, k, y_ground, contact_area, is_DBC, reduced_basis, h):
     projected_hess = IP_hess(x, e, x_tilde, m, l2, k, y_ground, contact_area, h)
     reshaped_grad = IP_grad(x, e, x_tilde, m, l2, k, y_ground, contact_area, h).reshape(len(x) * 2, 1)
     # eliminate DOF by modifying gradient and Hessian for DBC:
@@ -66,4 +66,6 @@ def search_dir(x, e, x_tilde, m, l2, k, y_ground, contact_area, is_DBC, h):
     for i in range(0, len(x)):
         if is_DBC[i]:
             reshaped_grad[i * 2] = reshaped_grad[i * 2 + 1] = 0.0
-    return spsolve(projected_hess, -reshaped_grad).reshape(len(x), 2)
+    reduced_hess = reduced_basis.T.dot(projected_hess.dot(reduced_basis)) # applying chain rule
+    reduced_grad = reduced_basis.T.dot(reshaped_grad) # applying chain rule
+    return (reduced_basis.dot(spsolve(reduced_hess, -reduced_grad))).reshape(len(x), 2) # transform to full space after the solve
