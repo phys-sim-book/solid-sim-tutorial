@@ -11,13 +11,13 @@ side_length = 1             # side length of the square
 n_seg = 4                   # number of springs per side of the square
 [x, e] = square_mesh.generate(side_length, n_seg)   # array of particle positions and springs   ###
 v = np.array([[0.0, 0.0]] * len(x))     # velocity array of particles ###
-g = np.array([0, -9.81])    # gravitational acceleration
+g = np.array([0.0, -10.0])  # gravitational acceleration
 spring_rest_len = []        # rest length array of the springs ###
 for i in range(0, len(e)):  # calculate the rest length of each spring
     spring_vec = x[e[i][0]] - x[e[i][1]]    # the vector connecting two ends of spring i
     spring_rest_len.append(math.sqrt(spring_vec[0] * spring_vec[0] + spring_vec[1] * spring_vec[1]))
-spring_stiffness = 1000     # stiffness of the spring
-h = 0.1                     # time step size in seconds
+spring_stiffness = 1e6      # stiffness of the spring
+h = 0.01                    # time step size in seconds
 
 # visualization/rendering setup
 pygame.init()
@@ -58,8 +58,8 @@ while running:
         spring_displacement = spring_cur_len - spring_rest_len[i]
         spring_force = -spring_stiffness * spring_displacement * (spring_vec / spring_cur_len)
         # update the velocity of the two ends of spring i
-        v[e[i][0]] += h * (g + spring_force) / m
-        v[e[i][1]] += h * (g - spring_force) / m
+        v[e[i][0]] += h * (g + spring_force / m)
+        v[e[i][1]] += h * (g - spring_force / m)
     # fix the top left and top right corner by setting velocity to 0:
     v[n_seg] = v[(n_seg + 1) * (n_seg + 1) - 1] = np.array([0, 0])
     # update the position of each particle:

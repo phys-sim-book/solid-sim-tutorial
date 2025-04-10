@@ -5,11 +5,10 @@ import numpy as np  # for vector data structure and computations
 import pygame       # for visualization
 
 # simulation setup
-m = 1000                    # mass of particle
 x = np.array([0.0, 0.0])    # position of particle
-v = np.array([0.1, 0.1])    # velocity of particle
-g = np.array([0, -9.81])    # gravitational acceleration
-h = 0.1                     # time step size in seconds
+v = np.array([0.0, 0.0])    # velocity of particle
+g = np.array([0.0, -10.0])  # gravitational acceleration
+h = 0.01                # time step size in seconds
 
 # visualization/rendering setup
 pygame.init()
@@ -41,7 +40,7 @@ while running:
         pygame.time.wait(int(1000.0 / render_FPS))  # wait to render the next frame
 
     # step forward the simulation by updating particle velocity and position
-    v += h * g / m
+    v += h * g
     x += h * v
 
     # pause the simulation when the particle touches on the ground 
