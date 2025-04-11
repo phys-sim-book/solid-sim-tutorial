@@ -6,9 +6,9 @@ import pygame       # for visualization
 import square_mesh  # for generating a square mesh
 
 # simulation setup
-m = 1000                    # mass of each particle
 side_length = 1             # side length of the square
 n_seg = 4                   # number of springs per side of the square
+m = 1000                    # mass of each particle
 [x, e] = square_mesh.generate(side_length, n_seg)   # array of particle positions and springs   ###
 v = np.array([[0.0, 0.0]] * len(x))     # velocity array of particles ###
 g = np.array([0.0, -10.0])  # gravitational acceleration

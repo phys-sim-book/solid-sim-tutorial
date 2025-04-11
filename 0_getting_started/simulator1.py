@@ -6,7 +6,7 @@ import pygame       # for visualization
 
 # simulation setup
 m = 1000                    # mass of particle
-x = np.array([0.3, 0.0])    # position of particle
+x = np.array([0.4, 0.0])    # position of particle
 v = np.array([0.0, 0.0])    # velocity of particle
 g = np.array([0.0, -10.0])  # gravitational acceleration
 spring_rest_len = 0.3       # rest length of the spring ###

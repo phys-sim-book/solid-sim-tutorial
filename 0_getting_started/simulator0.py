@@ -8,7 +8,7 @@ import pygame       # for visualization
 x = np.array([0.0, 0.0])    # position of particle
 v = np.array([0.0, 0.0])    # velocity of particle
 g = np.array([0.0, -10.0])  # gravitational acceleration
-h = 0.01                # time step size in seconds
+h = 0.01                    # time step size in seconds
 
 # visualization/rendering setup
 pygame.init()
@@ -39,13 +39,13 @@ while running:
         pygame.display.flip()   # flip the display
         pygame.time.wait(int(1000.0 / render_FPS))  # wait to render the next frame
 
-    # step forward the simulation by updating particle velocity and position
-    v += h * g
-    x += h * v
-
     # pause the simulation when the particle touches on the ground 
     if x[1] <= -1:
         input()
         break
+
+    # step forward the simulation by updating particle velocity and position
+    v += h * g
+    x += h * v
 
     time_step += 1  # update time step counter
