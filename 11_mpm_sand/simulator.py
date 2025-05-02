@@ -80,7 +80,7 @@ poisson_samples = poisson_disk_sampling(dx / np.sqrt(ppc), [0.2, 0.4]) # simulat
 N_particles = len(poisson_samples)
 x = ti.Vector.field(2, float, N_particles) # the position of particles
 x.from_numpy(np.array(poisson_samples) + [0.4, 0.55])
-v = ti.Vector.field(2, float, N_particles) # the position of particles
+v = ti.Vector.field(2, float, N_particles) # the velocity of particles
 vol = ti.field(float, N_particles)         # the volume of particle
 vol.fill(0.2 * 0.4 / N_particles) # get the volume of each particle as V_rest / N_particles
 m = ti.field(float, N_particles)           # the mass of particle
