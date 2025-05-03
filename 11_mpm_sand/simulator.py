@@ -71,7 +71,9 @@ E, nu = 3.537e5, 0.3 # sand's Young's modulus and Poisson's ratio
 mu, lam = E / (2 * (1 + nu)), E * nu / ((1 + nu) * (1 - 2 * nu)) # sand's Lame parameters
 sdf_friction = 0.5 # frictional coefficient of SDF boundary condition
 friction_angle_in_degrees = 25.0 # Drucker Prager friction angle
+# ANCHOR: D_def
 D = (1./4.) * dx * dx # constant D for Quadratic B-spline used for APIC
+# ANCHOR_END: D_def
 
 # sampling material particles with poisson-disk sampling (Section 26.1)
 poisson_samples = poisson_disk_sampling(dx / np.sqrt(ppc), [0.2, 0.4]) # simulating a [30cm, 50cm] sand block
@@ -166,7 +168,9 @@ def particle_to_grid_transfer():
                                           w[i][0] * (1. / dx) * dw_dx[j][1]])
 
                 grid_m[base + offset] += weight * m[p] # mass transfer
+                # ANCHOR: apic_p2g
                 grid_v[base + offset] += weight * m[p] * (v[p] + C[p] @ dpos) # momentum Transfer, APIC formulation
+                # ANCHOR_END: apic_p2g
                 # internal force (stress) transfer
                 fi = -vol[p] * P @ F[p].transpose() @ grad_weight
                 grid_v[base + offset] += dt * fi
@@ -223,7 +227,9 @@ def grid_to_particle_transfer():
                                           w[i][0] * (1. / dx) * dw_dx[j][1]])
 
                 new_v += weight * grid_v[base + offset]
+                # ANCHOR: apic_g2p
                 new_C += weight * grid_v[base + offset].outer_product(dpos) / D
+                # ANCHOR_END: apic_g2p
                 v_grad_wT += grid_v[base + offset].outer_product(grad_weight)
 
         v[p] = new_v
