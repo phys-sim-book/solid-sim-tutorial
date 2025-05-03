@@ -96,6 +96,7 @@ def particle_to_grid_transfer():
 # ANCHOR_END: p2g
 
 # Grid Update (Section 26.3)
+# ANCHOR: grid_update
 @ti.kernel
 def update_grid():
     for i, j in grid_m:
@@ -105,6 +106,7 @@ def update_grid():
             # Dirichlet BC near the bounding box
             if i <= 3 or i > grid_size - 3 or j <= 2 or j > grid_size - 3:
                 grid_v[i, j] = 0
+# ANCHOR_END: grid_update
 
 
 # Grid-to-Particle (G2P) Transfers (Section 26.3)
