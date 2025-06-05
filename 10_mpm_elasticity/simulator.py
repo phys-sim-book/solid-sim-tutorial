@@ -9,15 +9,15 @@ ti.init(arch=ti.cpu)
 grid_size = 128 # background Eulerian grid's resolution, in 2D is [128, 128]
 dx = 1.0 / grid_size # the domain size is [1m, 1m] in 2D, so dx for each cell is (1/128)m
 dt = 2e-4 # time step size in second
-ppc = 8 # average particle-per-cell
+ppc = 8 # average particles per cell
 
-density = 1000 # kg / m^3
-E, nu = 1e4, 0.3 # sand's Young's modulus and Poisson's ratio
-mu, lam = E / (2 * (1 + nu)), E * nu / ((1 + nu) * (1 - 2 * nu)) # sand's Lame parameters
+density = 1000 # mass density, unit: kg / m^3
+E, nu = 1e4, 0.3 # block's Young's modulus and Poisson's ratio
+mu, lam = E / (2 * (1 + nu)), E * nu / ((1 + nu) * (1 - 2 * nu)) # Lame parameters
 # ANCHOR_END: property_def
 
 # ANCHOR: setting
-# sampling material particles with uniform sampling (Section 26.1)
+# uniformly sampling material particles
 def uniform_grid(x0, y0, x1, y1, dx):
     xx, yy = np.meshgrid(np.arange(x0, x1 + dx, dx), np.arange(y0, y1 + dx, dx))
     return np.column_stack((xx.ravel(), yy.ravel()))
@@ -31,7 +31,7 @@ all_velocities = np.concatenate([box1_velocities, box2_velocities], axis=0)
 # ANCHOR_END: setting
 
 # ANCHOR: data_def
-# material particles data (Section 26.1)
+# material particles data
 N_particles = len(all_samples)
 x = ti.Vector.field(2, float, N_particles) # the position of particles
 x.from_numpy(all_samples)
@@ -68,7 +68,7 @@ def StVK_Hencky_PK1_2D(F):
     return U @ (2 * mu * inv_sig @ e + lam * e.trace() * inv_sig) @ V.transpose()
 # ANCHOR_END: stvk
 
-# Particle-to-Grid (P2G) Transfers (Section 26.3)
+# Particle-to-Grid (P2G) Transfers
 # ANCHOR: p2g
 @ti.kernel
 def particle_to_grid_transfer():
@@ -95,7 +95,7 @@ def particle_to_grid_transfer():
                 grid_v[base + offset] += dt * fi
 # ANCHOR_END: p2g
 
-# Grid Update (Section 26.3)
+# Grid Update
 # ANCHOR: grid_update
 @ti.kernel
 def update_grid():
@@ -109,7 +109,7 @@ def update_grid():
 # ANCHOR_END: grid_update
 
 
-# Grid-to-Particle (G2P) Transfers (Section 26.3)
+# Grid-to-Particle (G2P) Transfers
 # ANCHOR: g2p
 @ti.kernel
 def grid_to_particle_transfer():
@@ -137,17 +137,17 @@ def grid_to_particle_transfer():
         F[p] = (ti.Matrix.identity(float, 2) + dt * v_grad_wT) @ F[p]
 # ANCHOR_END: g2p
 
-# Deformation Gradient and Particle State Update (Section 26.4)
+# Deformation Gradient and Particle State Update
 # ANCHOR: particle_update
 @ti.kernel
 def update_particle_state():
     for p in range(N_particles):
-        x[p] += dt * v[p] # advection (Section 26.4)
+        x[p] += dt * v[p] # advection
 # ANCHOR_END: particle_update
 
 # ANCHOR: time_step
 def step():
-    # a single time step of the Material Point Method (MPM) simulation (Section 26.5)
+    # a single time step of the Material Point Method (MPM) simulation
     reset_grid()
     particle_to_grid_transfer()
     update_grid()
