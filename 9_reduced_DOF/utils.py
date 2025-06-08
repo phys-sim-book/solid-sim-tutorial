@@ -1,3 +1,4 @@
+import math
 import numpy as np
 import numpy.linalg as LA
 
@@ -32,6 +33,21 @@ def smallest_positive_real_root_quad(a, b, c, tol = 1e-6):
             t = -1
     return t
 # ANCHOR_END: find_positive_real_root
+
+def compute_abd_anchor_basis(x):
+    c = x.mean(axis=0)
+    diag = np.linalg.norm(x.max(axis=0) - x.min(axis=0))
+    scale = diag / math.sqrt(2)
+    c -= 1/3 * scale
+    anchors = np.stack([c, c + np.asarray([scale, 0]), c + np.asarray([0, scale])], axis=0)
+
+    basis = np.zeros((len(anchors) * 2, 6)) # 1, x, y for both x- and y-displacements
+    for i in range(len(anchors)):
+        for d in range(2):
+            basis[i * 2 + d][d * 3] = 1
+            basis[i * 2 + d][d * 3 + 1] = anchors[i][0]
+            basis[i * 2 + d][d * 3 + 2] = anchors[i][1]
+    return basis
 
 def compute_reduced_basis(x, e, vol, IB, mu_lame, lam, method, order):
     if method == 0: # full basis, no reduction

@@ -4,19 +4,21 @@ import numpy as np  # numpy for linear algebra
 import pygame       # pygame for visualization
 pygame.init()
 
+import math 
 import utils
 import square_mesh   # square mesh
 import time_integrator
 
 # simulation setup
 side_len = 1
-rho = 1000      # density of square
-E = 2e4         # Young's modulus
-nu = 0.4        # Poisson's ratio
-n_seg = 10       # num of segments per side of the square
-h = 0.01        # time step size in s
-DBC = []        # no nodes need to be fixed
-y_ground = -1   # height of the planar ground
+rho = 1000          # density of square
+E = 2e4             # Young's modulus
+nu = 0.4            # Poisson's ratio
+n_seg = 10          # num of segments per side of the square
+h = 0.01            # time step size in s
+DBC = []            # no nodes need to be fixed
+y_ground = -1       # height of the planar ground
+draw_abd = True     # whether to draw the embedding mesh for ABD 
 
 # initialize simulation
 [x, e] = square_mesh.generate(side_len, n_seg)  # node positions and edge node indices
@@ -41,7 +43,10 @@ for i in DBC:
 contact_area = [side_len / n_seg] * len(x)     # perimeter split to each node
 # ANCHOR_END: contact_area
 # compute reduced basis using 0: no reduction; 1: polynomial functions; 2: modal reduction
-reduced_basis = utils.compute_reduced_basis(x, e, vol, IB, mu_lame, lam, method=1, order=2)
+method = 1
+order = 1
+reduced_basis = utils.compute_reduced_basis(x, e, vol, IB, mu_lame, lam, method, order)
+abd_anchor_basis = utils.compute_abd_anchor_basis(x)
 
 # simulation with visualization
 resolution = np.array([900, 900])
@@ -65,6 +70,15 @@ while running:
     # fill the background and draw the square
     screen.fill((255, 255, 255))
     pygame.draw.aaline(screen, (0, 0, 255), screen_projection([-2, y_ground]), screen_projection([2, y_ground]))   # ground
+    # draw abd 
+    if draw_abd and method == 1 and order == 1: 
+        for i in range(3):
+            reduced_vars = np.linalg.solve(np.transpose(reduced_basis) @ reduced_basis, np.transpose(reduced_basis) @ x.reshape(-1))
+            abd_anchors = abd_anchor_basis @ reduced_vars
+            pygame.draw.circle(screen, (255, 0, 0), screen_projection(abd_anchors[2 * i: 2 * i + 2]), 0.1 * side_len / n_seg * scale)
+        pygame.draw.aaline(screen, (255, 0, 0), screen_projection(abd_anchors[0:2]), screen_projection(abd_anchors[2:4]))
+        pygame.draw.aaline(screen, (255, 0, 0), screen_projection(abd_anchors[2:4]), screen_projection(abd_anchors[4:6]))
+        pygame.draw.aaline(screen, (255, 0, 0), screen_projection(abd_anchors[4:6]), screen_projection(abd_anchors[0:2]))
     for eI in e:
         # ANCHOR: draw_tri
         pygame.draw.aaline(screen, (0, 0, 255), screen_projection(x[eI[0]]), screen_projection(x[eI[1]]))
