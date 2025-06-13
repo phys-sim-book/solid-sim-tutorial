@@ -20,7 +20,8 @@ def smallest_positive_real_root_quad(a, b, c, tol = 1e-6):
     else:
         desc = b * b - 4 * a * c
         if desc > 0:
-            t = (-b - math.sqrt(desc)) / (2 * a)
+            t = (-b - math.sqrt(desc)) / (2 * a) # if a > 0, this is either the smaller positive root, or both roots are negative; 
+            # if a < 0, there are 1 negative and 1 positive real roots, and we just need the positive one.
             if t < 0:
                 t = (-b + math.sqrt(desc)) / (2 * a)
         else: # desv<0 ==> imag, f(x) > 0 for all x > 0
