@@ -168,12 +168,12 @@ for i in range(N_eig):
 print("\nGenerating combined mode animation...")
 
 num_modes_to_animate = 6
-animation_duration = 5.0
-fps = 30
+animation_duration = 4.0
+fps = 20
 num_frames = int(animation_duration * fps)
 displacement_scale = L * 0.15 # Scale displacements for better visibility
 
-fig, axes = plt.subplots(1, num_modes_to_animate, figsize=(15, 8))
+fig, axes = plt.subplots(1, num_modes_to_animate, figsize=(7.5, 4))
 
 triangles = []
 for el in elements:
@@ -215,7 +215,7 @@ def animate(frame):
         ax.set_ylim(fixed_ylim)
         ax.set_aspect('equal')
         
-        ax.triplot(triang, '--', color='gray', linewidth=0.5)
+        ax.triplot(triang, '--', color='gray', linewidth=0.25)
         
         psi = eigenvectors[:, i]
         omega = angular_freq[i]
@@ -234,7 +234,7 @@ def animate(frame):
                           edgecolors='k', cmap='viridis', linewidth=0.5,
                           vmin=0, vmax=vmax_values[i])
                           
-        ax.set_title(f'Mode {i+1}\n{frequencies[i]:.2f} Hz', fontsize=15)
+        ax.set_title(f'Mode {i+1}\n{frequencies[i]:.2f} Hz', fontsize=7.5)
         ax.set_xticks([])
         ax.set_yticks([])
 
