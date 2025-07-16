@@ -56,6 +56,7 @@ def IP_hess(x, e, x_tilde, m, vol, IB, mu_lame, lam, y_ground, contact_area, h):
     H = sparse.coo_matrix((IJV[2], (IJV[0], IJV[1])), shape=(len(x) * 2, len(x) * 2)).tocsr()
     return H
 
+# ANCHOR: search_dir
 def search_dir(x, e, x_tilde, m, vol, IB, mu_lame, lam, y_ground, contact_area, is_DBC, reduced_basis, h):
     projected_hess = IP_hess(x, e, x_tilde, m, vol, IB, mu_lame, lam, y_ground, contact_area, h)
     reshaped_grad = IP_grad(x, e, x_tilde, m, vol, IB, mu_lame, lam, y_ground, contact_area, h).reshape(len(x) * 2, 1)
@@ -69,3 +70,4 @@ def search_dir(x, e, x_tilde, m, vol, IB, mu_lame, lam, y_ground, contact_area, 
     reduced_hess = reduced_basis.T.dot(projected_hess.dot(reduced_basis)) # applying chain rule
     reduced_grad = reduced_basis.T.dot(reshaped_grad) # applying chain rule
     return (reduced_basis.dot(spsolve(reduced_hess, -reduced_grad))).reshape(len(x), 2) # transform to full space after the solve
+# ANCHOR_END: search_dir
