@@ -50,6 +50,7 @@ def compute_abd_anchor_basis(x):
             basis[i * 2 + d][d * 3 + 2] = anchors[i][1]
     return basis
 
+# ANCHOR: compute_reduced_basis
 def compute_reduced_basis(x, e, vol, IB, mu_lame, lam, method, order):
     if method == 0: # full basis, no reduction
         basis = np.zeros((len(x) * 2, len(x) * 2))
@@ -100,3 +101,4 @@ def compute_reduced_basis(x, e, vol, IB, mu_lame, lam, method, order):
         H = sparse.coo_matrix((IJV[2], (IJV[0], IJV[1])), shape=(len(x) * 2, len(x) * 2)).tocsr()
         eigenvalues, eigenvectors = eigsh(H, k=order, which='SM') # get 'order' eigenvectors with smallest eigenvalues 
         return eigenvectors
+# ANCHOR_END: compute_reduced_basis
