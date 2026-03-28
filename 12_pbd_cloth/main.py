@@ -78,7 +78,7 @@ gravity = ti.Vector([0.0, -9.8, 0.0])
 dt = 1.0 / 60.0
 num_substeps = 15
 sdt = dt / num_substeps
-solver_iterations = 1
+solver_iterations = 1 # can increase
 
 export_enabled = False
 export_frame_count = 0
@@ -112,6 +112,10 @@ bending_ids = ti.field(ti.i32, shape=(num_bending_constraints, 2))
 stretching_lengths = ti.field(dtype=ti.f64, shape=num_stretching_constraints)
 bending_lengths = ti.field(dtype=ti.f64, shape=num_bending_constraints)
 
+# XPBD accumulated lambdas (one per constraint, reset each substep)
+stretching_lambdas = ti.field(dtype=ti.f64, shape=num_stretching_constraints)
+bending_lambdas = ti.field(dtype=ti.f64, shape=num_bending_constraints)
+
 # Visualization fields
 ground_vertices = ti.Vector.field(3, dtype=ti.f64, shape=4)
 ground_indices = ti.field(ti.i32, shape=6)
@@ -133,12 +137,28 @@ ground_indices.from_numpy(np.array([0, 1, 2, 0, 2, 3], dtype=np.int32))
 # Simulation Substep Function
 # ============================================================================
 
+@ti.kernel
+def reset_constraint_lambdas(
+    num_s: ti.i32, num_b: ti.i32,
+    s_lambdas: ti.template(), b_lambdas: ti.template()
+):
+    for i in range(num_s):
+        s_lambdas[i] = 0.0
+    for i in range(num_b):
+        b_lambdas[i] = 0.0
+
+
 def substep(grab_id, grab_x, grab_y, grab_z):
     """Perform one simulation substep."""
     pre_solve(sdt, num_particles, gravity, pos, prev_pos, vel, inv_mass)
+    # XPBD: reset lambdas once per substep (they accumulate across solver iterations)
+    reset_constraint_lambdas(
+        num_stretching_constraints, num_bending_constraints,
+        stretching_lambdas, bending_lambdas
+    )
     for _ in range(solver_iterations):
-        solve_stretching_constraints(stretching_compliance, sdt, num_stretching_constraints, pos, stretching_ids, stretching_lengths, inv_mass)
-        solve_bending_constraints(bending_compliance, sdt, num_bending_constraints, pos, bending_ids, bending_lengths, inv_mass)
+        solve_stretching_constraints(stretching_compliance, sdt, num_stretching_constraints, pos, stretching_ids, stretching_lengths, inv_mass, stretching_lambdas)
+        solve_bending_constraints(bending_compliance, sdt, num_bending_constraints, pos, bending_ids, bending_lengths, inv_mass, bending_lambdas)
     apply_grab(grab_id, grab_x, grab_y, grab_z, pos, vel, grab_indicator_pos)
     post_solve(sdt, num_particles, pos, prev_pos, vel, inv_mass)
 

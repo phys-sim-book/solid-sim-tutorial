@@ -4,7 +4,8 @@ import taichi as ti
 @ti.kernel
 def solve_edges(
     compliance: ti.f64, dt: ti.f64, num_edges: ti.i32,
-    pos: ti.template(), edge_ids: ti.template(), edge_lengths: ti.template(), inv_mass: ti.template()
+    pos: ti.template(), edge_ids: ti.template(), edge_lengths: ti.template(),
+    inv_mass: ti.template(), lambdas: ti.template()
 ):
     alpha = compliance / (dt * dt)
     for i in range(num_edges):
@@ -17,6 +18,7 @@ def solve_edges(
         if dist == 0.0: continue
         grad = delta / dist
         C = dist - edge_lengths[i]
-        s = -C / (w_sum + alpha)
-        pos[id0] += s * w0 * grad
-        pos[id1] -= s * w1 * grad
+        dlambda = -(C + alpha * lambdas[i]) / (w_sum + alpha)
+        lambdas[i] += dlambda
+        pos[id0] += dlambda * w0 * grad
+        pos[id1] -= dlambda * w1 * grad
