@@ -12,7 +12,7 @@ from xpbd_base import get_tet_volume
 def solve_volumes(
     compliance: ti.f64, dt: ti.f64, num_tets: ti.i32,
     pos: ti.template(), tet_ids: ti.template(), rest_vol: ti.template(), inv_mass: ti.template(),
-    vol_id_order: ti.template()
+    vol_id_order: ti.template(), lambdas: ti.template()
 ):
     alpha = compliance / (dt * dt)
     for i in range(num_tets):
@@ -27,6 +27,7 @@ def solve_volumes(
             w_sum += inv_mass[p_indices[j]] * grad.norm_sqr()
         if w_sum == 0.0: continue
         C = get_tet_volume(p_indices, pos) - rest_vol[i]
-        s = -C / (w_sum + alpha)
+        dlambda = -(C + alpha * lambdas[i]) / (w_sum + alpha)
+        lambdas[i] += dlambda
         for j in ti.static(range(4)):
-            pos[p_indices[j]] += s * inv_mass[p_indices[j]] * grads[j, :]
+            pos[p_indices[j]] += dlambda * inv_mass[p_indices[j]] * grads[j, :]

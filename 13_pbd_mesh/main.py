@@ -154,6 +154,10 @@ edge_lengths = ti.field(dtype=ti.f64, shape=num_edges)
 tet_ids = ti.field(ti.i32, shape=(num_tets, 4))
 edge_ids = ti.field(ti.i32, shape=(num_edges, 2))
 
+# XPBD accumulated lambdas (one per constraint, reset each substep)
+edge_lambdas = ti.field(dtype=ti.f64, shape=num_edges)
+vol_lambdas = ti.field(dtype=ti.f64, shape=num_tets)
+
 # Visual mesh fields
 vis_mesh_rest_pos = ti.Vector.field(3, dtype=ti.f64, shape=num_vis_verts)
 vis_mesh_pos = ti.Vector.field(3, dtype=ti.f64, shape=num_vis_verts)
@@ -194,11 +198,24 @@ ground_colors.fill(ti.Vector([0.8, 0.8, 0.8], dt=ti.f32))
 # Simulation Substep Function
 # ============================================================================
 
+@ti.kernel
+def reset_constraint_lambdas(
+    num_e: ti.i32, num_v: ti.i32,
+    e_lambdas: ti.template(), v_lambdas: ti.template()
+):
+    for i in range(num_e):
+        e_lambdas[i] = 0.0
+    for i in range(num_v):
+        v_lambdas[i] = 0.0
+
+
 def substep():
     pre_solve(sdt, 1, num_particles, gravity, box_min, box_max, pos, prev_pos, vel, inv_mass)
+    # XPBD: reset lambdas once per substep (they accumulate across solver iterations)
+    reset_constraint_lambdas(num_edges, num_tets, edge_lambdas, vol_lambdas)
     for _ in range(solver_iterations):
-        solve_edges(edge_compliance, sdt, num_edges, pos, edge_ids, edge_lengths, inv_mass)
-        solve_volumes(vol_compliance, sdt, num_tets, pos, tet_ids, rest_vol, inv_mass, vol_id_order)
+        solve_edges(edge_compliance, sdt, num_edges, pos, edge_ids, edge_lengths, inv_mass, edge_lambdas)
+        solve_volumes(vol_compliance, sdt, num_tets, pos, tet_ids, rest_vol, inv_mass, vol_id_order, vol_lambdas)
     post_solve(sdt, num_particles, pos, prev_pos, vel, inv_mass)
 
 
@@ -284,6 +301,7 @@ while window.running:
     
     scene.mesh(vis_mesh_pos, indices=vis_mesh_indices, per_vertex_color=vis_mesh_colors)
     scene.mesh(ground_vertices, indices=ground_indices, per_vertex_color=ground_colors)
+    canvas.set_background_color((1.0, 1.0, 1.0))  # white
 
     canvas.scene(scene)
     window.show()

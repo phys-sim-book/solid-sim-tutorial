@@ -23,13 +23,13 @@ def initialize_colors(
 ):
   
     for i in range(num_particles):
-        x_coord = int((pos[i].x + 1.0) * 5) % 2
-        z_coord = int((pos[i].z + 1.0) * 5) % 2
+        x_coord = int((pos[i].x + 1.0) * 8) % 2
+        y_coord = int((pos[i].y + 1.0) * 8) % 2
         
-        if (x_coord + z_coord) % 2 == 0:
-            vertex_colors[i] = ti.Vector([1.0, 1.0, 1.0])
+        if (x_coord + y_coord) % 2 == 0:
+            vertex_colors[i] = ti.Vector([0.15, 0.35, 0.75])  # deep blue
         else:
-            vertex_colors[i] = ti.Vector([0.1, 0.1, 0.1])
+            vertex_colors[i] = ti.Vector([0.95, 0.92, 0.85])  # light cream
 
 
 @ti.kernel
